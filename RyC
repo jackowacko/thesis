@@ -34,8 +34,6 @@ exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
      return(exp1)
     }
 
-
-
 #evaluación de la función de rogers y castro con 10000 simulaciones de los parámetros
 
 ListaVectores <- lapply(as.list(1:85), function(x){
