@@ -28,13 +28,13 @@ c <- runif(10000,0.002,0.004)
 #FUNCIÓN DE 11 PARÁMETROS DE ROGERS Y CASTRO
 
 exp.test<-function(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
-nexp<-0
+nexp<- double(length(x))
   for(i in 1:length(x)){
     exp <- (a1 * exp(-(alpha1 * x [i])))
     + (a2 * exp(-(lambda2 * (x[i] - mu2))))
     + (a3 * exp(-(lambda3 * (x[i] - mu3))))
     +c
-   nexp<-c(nexp,exp)
+   nexp [i]<- exp
     }
  return(nexp)
 }
