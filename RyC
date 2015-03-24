@@ -37,11 +37,13 @@ exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
 
 
 #evaluación de la función de rogers y castro con 10000 simulaciones de los parámetros
-lapply(as.list(1:85), function(x){
-    x11()
-    hist(exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim
-                ,alpha2.sim,lambda2.sim
-                ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c),
-         main=paste('Edad',x),,col='red')
-    })
 
+ListaVectores <- lapply(as.list(1:85), function(x){
+   exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim
+                ,alpha2.sim,lambda2.sim
+                ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c)
+      })
+
+dataFrameVectores <- do.call('rbind',ListaVectores)
+
+hist(ListaVectores[1],main=paste('Edad',x),col='red')
