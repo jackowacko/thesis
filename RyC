@@ -1,4 +1,10 @@
 #CREACION DE VALORES PARA LA FUCIÓN DE ROGERS Y CASTRO
+#asumiendo que las distribuciones de todos los parámetros del modelo de 11 parámetros son 
+#aprioris no iformativas
+
+#vector de edades
+x <- as.numeric(rep(1:85,1))
+
 #primera exponencial
 a1.sim <- runif(10000,0.023,0.043)
 alpha1.sim <- runif(100000,0.049,0.069)
