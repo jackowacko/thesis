@@ -1,0 +1,39 @@
+#CREACION DE VALORES PARA LA FUCIÓN DE ROGERS Y CASTRO
+#primera exponencial
+a1.sim <- runif(10000,0.023,0.043)
+alpha1.sim <- runif(100000,0.049,0.069)
+
+#segunda exponencial
+a2.sim <- runif(10000,0.023,0.043)
+alpha2.sim <- runif(10000,0.049,0.069)
+mu2.sim <- runif(10000,19.80,21.80)
+lambda2.sim <- runif(10000,0.274,0.474)
+
+#tercera exponencial
+a3.sim <- runif(10000,0.023,0.043)
+alpha3.sim <- runif(10000,0.049,0.069)
+mu3.sim <- runif(10000,19.80,21.80)
+lambda3.sim <- runif(10000,0.274,0.474)
+
+#constante
+c <- runif(10000,0.002,0.004)
+
+
+#FUNCIÓN DE 11 PARÁMETROS DE ROGERS Y CASTRO
+
+exp.test<-function(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
+nexp<-0
+  for(i in 1:length(x)){
+    exp <- (a1 * exp(-(alpha1 * x [i])))
+    + (a2 * exp(-(lambda2 * (x[i] - mu2))))
+    + (a3 * exp(-(lambda3 * (x[i] - mu3))))
+    +c
+   nexp<-c(nexp,exp)
+    }
+ return(nexp)
+}
+
+#evaluación de la función de rogers y castro con 10000 simulaciones de los parámetros
+res<-exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim,alpha2.sim,lambda2.sim,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c)
+hist(res,50,col='red')
+res
