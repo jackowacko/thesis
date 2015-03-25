@@ -25,14 +25,15 @@ c <- runif(10000,0.002,0.004)
 
 #FUNCIÓN DE 11 PARÁMETROS DE ROGERS Y CASTRO
 
+
 exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
-     x <- x1
-    exp1 <- (a1 * exp(-(alpha1 * x )))
-    + (a2 * exp(-(lambda2 * (x - mu2))))
-    + (a3 * exp(-(lambda3 * (x - mu3))))
-    +c
-     return(exp1)
-    }
+  x <- x1
+  exp1 <- (a1 * exp(-alpha1 * x ))
+  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
+  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
+  +c
+  return(exp1)
+}
 
 #evaluación de la función de rogers y castro con 10000 simulaciones de los parámetros
 
