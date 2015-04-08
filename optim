@@ -1,10 +1,18 @@
-estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+setwd("D:/UnivAutBarcelona/MCMC")
 
+#------------------------------------------------------------------
+#Función de optimización de los parámetros
+#------------------------------------------------------------------
+# parámetros de estocolmo a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c
+
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+#estocolmo<-c(0,0,0,0,0,0,0,0,0,0,0)
 
 dat <- as.data.frame(read.table('mexico.txt',header=T,sep='\t'))
 plot(proporcion ~ edad, data = dat,type='l', col='red')
 
 exp.test<-function(data,estocolmo){
+
   x <- data[1]
   y <- data[2]
   
@@ -12,14 +20,29 @@ exp.test<-function(data,estocolmo){
   + (estocolmo[3] * exp(-estocolmo[5] * (x-estocolmo[4]) - exp(-estocolmo[6] * (x - estocolmo[4]))))
   + (estocolmo[7] * exp(-estocolmo[9] * (x-estocolmo[8]) - exp(-estocolmo[10] * (x - estocolmo[8]))))
   + estocolmo[11]
-  return(y)
+
 }
 
 
-result <- optim(par = estocolmo, exp.test, data = dat)
+result <- optim(par = estocolmo, exp.test, data = dat, method = "BFGS")
 result
 
-lo que me arroja r y no entiendo
-> result <- optim(par = estocolmo, exp.test, data = dat)
-Error in optim(par = estocolmo, exp.test, data = dat) : 
-  (list) object cannot be coerced to type 'double'
+#------------------------------------------------------------------
+#Evaluacion de la función 
+#------------------------------------------------------------------
+
+evalua.fun <- function(x){
+  
+  y <- (result$par[1] * exp(-result$par[2] * x ))
+  + (result$par[3] * exp(-result$par[5] * (x-result$par[4]) - exp(-result$par[6] * (x - result$par[4]))))
+  + (estocolmo[7] * exp(-result$par[9] * (x-result$par[8]) - exp(-result$par[10] * (x - result$par[8]))))
+  + result$par[11]
+  return(y)
+  
+}
+
+evalua<-evalua.fun(dat[1])
+
+plot(proporcion ~ edad, data = dat,type='l', col='red')
+lines(evalua$edad, type='l',col='blue')
+
