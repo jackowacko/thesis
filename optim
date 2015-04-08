@@ -1,0 +1,25 @@
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+
+
+dat <- as.data.frame(read.table('mexico.txt',header=T,sep='\t'))
+plot(proporcion ~ edad, data = dat,type='l', col='red')
+
+exp.test<-function(data,estocolmo){
+  x <- data[1]
+  y <- data[2]
+  
+  y <- (estocolmo[1] * exp(-estocolmo[2] * x ))
+  + (estocolmo[3] * exp(-estocolmo[5] * (x-estocolmo[4]) - exp(-estocolmo[6] * (x - estocolmo[4]))))
+  + (estocolmo[7] * exp(-estocolmo[9] * (x-estocolmo[8]) - exp(-estocolmo[10] * (x - estocolmo[8]))))
+  + estocolmo[11]
+  return(y)
+}
+
+
+result <- optim(par = estocolmo, exp.test, data = dat)
+result
+
+lo que me arroja r y no entiendo
+> result <- optim(par = estocolmo, exp.test, data = dat)
+Error in optim(par = estocolmo, exp.test, data = dat) : 
+  (list) object cannot be coerced to type 'double'
