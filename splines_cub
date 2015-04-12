@@ -1,0 +1,8 @@
+setwd("D:/UnivAutBarcelona/MCMC")
+dat <- as.data.frame(read.table('mexico.txt',header=T,sep='\t'))
+
+plot(dat$edad, dat$proportion, main = "Change of residence 5 years ago \n Mexican Census", type='l', col='red')
+residence5 <- smooth.spline(dat$edad, dat$proportion)
+(residence5)
+## This example has duplicate points, so avoid cv = TRUE
+lines(residence5, col = "blue")
