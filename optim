@@ -1,7 +1,7 @@
-setwd("D:/UnivAutBarcelona/MCMC")
 
+setwd("D:/UnivAutBarcelona/MCMC")
 #------------------------------------------------------------------
-#Función de optimización de los parámetros
+#Función de optimización de los parámetros por máxima verosimilitud
 #------------------------------------------------------------------
 # parámetros de estocolmo a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c
 
@@ -9,40 +9,40 @@ estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 #estocolmo<-c(0,0,0,0,0,0,0,0,0,0,0)
 
 dat <- as.data.frame(read.table('mexico.txt',header=T,sep='\t'))
-plot(proporcion ~ edad, data = dat,type='l', col='red')
 
+plot(proportion ~ edad, data = dat,type='l', col='red')
+
+estocolmo<-c(0.033,0.097,0.059,20.8,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 exp.test<-function(data,par){
-
-  x <- data[1]
-  y <- data[2]
   
-  y <- par[1] * exp(-par[2] * x )
-  + (par[3] * exp(-par[5] * (x-par[4]) - exp(-par[6] * (x - par[4]))))
-  + (par[7] * exp(-par[9] * (x-par[8]) - exp(-par[10] * (x - par[8]))))
-  + par[11] 
-
+  sum(log(
+    par[1] * exp(-par[2] *  data[1])
+  + (par[3] * exp(-par[5] * (data[1]-par[4]) - exp(-par[6] * (data[1] - par[4]))))
+  + (par[7] * exp(-par[9] * (data[1]-par[8]) - exp(-par[10] * (data[1] - par[8]))))
+  + par[11]))
 }
 
-
-result <- optim(par = estocolmo, exp.test, data = dat, method = "BFGS")
+result <- optim(par = estocolmo, exp.test, data = dat, method='SANN')
 result
 
+
+#Method "SANN" is by default a variant of simulated annealing given in Belisle (1992). 
+#Simulated-annealing belongs to the class of stochastic global optimization methods. 
+#It uses only function values but is relatively slow. It will also work for non-differentiable functions. 
+#This implementation uses the Metropolis function for the acceptance probability.
+#By default the next candidate point is generated from a Gaussian Markov kernel 
+#with scale proportional to the actual temperature. If a function to generate a new candidate 
+#point is given, method "SANN" can also be used to solve combinatorial optimization problems. 
+#Temperatures are decreased according to the logarithmic cooling schedule as given in Belisle (1992, p. 890);
+#specifically, the temperature is set to temp / log(((t-1) %/% tmax)*tmax + exp(1)), 
+#where t is the current iteration step and temp and tmax are specifiable via control, see below. 
+#Note that the "SANN" method depends critically on the settings of the control parameters. 
+#It is not a general-purpose method but can be very useful in getting to a good value on a very rough surface.
+
 #------------------------------------------------------------------
-#Evaluacion de la función 
+#Evaluacion de la función AQUI ES DONDE ESTOY EMBALADO!!!!!
+#ya que no entiendo como hacer la evaluación de los puntos, me da una función muy rara, diferente a la que empiricamente
+#y observando los datos da... no se.. creo que hay que leer otro poco. 
 #------------------------------------------------------------------
 
-evalua.fun <- function(x){
-  
-  y <- (result$par[1] * exp(-result$par[2] * x ))
-  + (result$par[3] * exp(-result$par[5] * (x-result$par[4]) - exp(-result$par[6] * (x - result$par[4]))))
-  + (estocolmo[7] * exp(-result$par[9] * (x-result$par[8]) - exp(-result$par[10] * (x - result$par[8]))))
-  + result$par[11]
-  return(y)
-  
-}
-
-evalua<-evalua.fun(dat[1])
-
-plot(proporcion ~ edad, data = dat,type='l', col='red')
-lines(evalua$edad, type='l',col='blue')
 
