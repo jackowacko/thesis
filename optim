@@ -1,7 +1,7 @@
 
 setwd("D:/UnivAutBarcelona/MCMC")
 #------------------------------------------------------------------
-#Función de optimización de los parámetros por máxima verosimilitud
+#Función de optimización de los parámetros por máxima verosimilitud solo 7 parámetros
 #------------------------------------------------------------------
 
 # parámetros de estocolmo a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c
