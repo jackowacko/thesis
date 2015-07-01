@@ -29,7 +29,7 @@ migrants.la
 migrant.head <- filter(migrants.la, relate == 1, year == 2010)
 migrant.partner <- filter(migrants.la, relate == 2, year == 2010)
 
-time.with <- inner_join(migrant.head, migrant.partner, by = 'serial')
+time.with <- collect(inner_join(migrant.head, migrant.partner, by = 'serial'))
 time.with <- time.with %>% mutate(time = yrimm.y - yrimm.x)
 
 head.spouse <- filter(time.with, time > 0)
