@@ -1,0 +1,19 @@
+
+migrant.head <- filter(migrants.la, relate == 1, year == 2010)
+migrant.partner <- filter(migrants.la, relate == 2, year == 2010)
+
+time.with <- inner_join(migrant.head, migrant.partner, by = 'serial')
+time.with <- time.with %>% mutate(time = yrimm.y - yrimm.x)
+
+head.spouse <- filter(time.with, time > 0)
+> head.spouse
+Source: postgres 9.4.1 [postgres@localhost:5432/IPUMS]
+From: <derived table> [?? x 34]
+Filter: time < 0 
+
+Auto-disconnecting postgres connection (8912, 1)
+Error in postgresqlExecStatement(conn, statement, ...) : 
+  RS-DBI driver: (could not Retrieve the result : ERROR:  no existe la columna Â«timeÂ»
+LINE 41: WHERE "time" < 0.0
+               ^
+)
