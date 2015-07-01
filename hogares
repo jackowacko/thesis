@@ -1,3 +1,30 @@
+#read and write in the database
+## ATTENTION is better to read directly from Postgres
+#namerica <- read.csv('namerica.csv', header=T, sep=',')
+#dbWriteTable(con,'northamerica',namerica)
+#dbDisconnect(con) 
+
+# create a PostgreSQL instance and create one connection.
+m <- dbDriver("PostgreSQL")
+con <- dbConnect(m, user="postgres", password="80190035", dbname="IPUMS", host='localhost', port=5432)
+mig_db <- src_postgres(dbname = 'IPUMS', user = 'postgres', password = '80190035')
+
+migrants.la <- tbl(mig_db, sql('SELECT * FROM namerica WHERE 
+                               (bplctry=21010) OR (bplctry=21010) OR (bplctry=21020) OR (bplctry=21030) OR
+                               (bplctry=21040) OR (bplctry=21050) OR (bplctry=21060) OR (bplctry=21070) OR
+                               (bplctry=21080) OR (bplctry=21090) OR (bplctry=21100) OR (bplctry=21110) OR
+                               (bplctry=21120) OR (bplctry=21130) OR (bplctry=21140) OR (bplctry=21150) OR 
+                               (bplctry=21160) OR (bplctry=21170) OR (bplctry=21180) OR (bplctry=21190) OR
+                               (bplctry=21200) OR (bplctry=21210) OR (bplctry=21220) OR (bplctry=21230) OR 
+                               (bplctry=21240) OR (bplctry=21250) OR (bplctry=21260) OR (bplctry=21270) OR 
+                               (bplctry=22010) OR (bplctry=22010) OR (bplctry=22020) OR (bplctry=22030) OR
+                               (bplctry=22040) OR (bplctry=22050) OR (bplctry=22060) OR (bplctry=22070) OR
+                               (bplctry=22080) OR
+                               (bplctry=23010) OR (bplctry=23010) OR (bplctry=23020) OR (bplctry=23030) OR
+                               (bplctry=23040) OR (bplctry=23050) OR (bplctry=23060) OR (bplctry=23070) OR
+                               (bplctry=23080) OR (bplctry=23090) OR (bplctry=23100) OR (bplctry=23110) OR
+                               (bplctry=23120) OR (bplctry=23130) OR (bplctry=23140)'))
+migrants.la
 
 migrant.head <- filter(migrants.la, relate == 1, year == 2010)
 migrant.partner <- filter(migrants.la, relate == 2, year == 2010)
