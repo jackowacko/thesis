@@ -6,7 +6,7 @@
 
 # create a PostgreSQL instance and create one connection.
 m <- dbDriver("PostgreSQL")
-con <- dbConnect(m, user="postgres", password="80190035", dbname="IPUMS", host='localhost', port=5432)
+con <- dbConnect(m, user="postgres", password="xxxxxx", dbname="IPUMS", host='localhost', port=xxxxx)
 mig_db <- src_postgres(dbname = 'IPUMS', user = 'postgres', password = '80190035')
 
 migrants.la <- tbl(mig_db, sql('SELECT * FROM namerica WHERE 
