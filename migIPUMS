@@ -1,6 +1,34 @@
 
-Antes que nada debe descargarse la tabla en csv de IPUMS (dentro de IPUMS, antes de descargar cualquier csv hay un 
+Antes que nada debe descargarse la tabla en csv de IPUMS (dentro de IPUMS, antes de descargar cualquier csv hay una
+pestaña en la que se puede modificar el formato para la descarga. Lo mejor es descargarlo país por país para ir formando 
+tablas no tan pesadas. 
 
+Después de ésto se suben a Postgres de la siguiente manera:
+
+#ejemplo de Norte América, este código lo iré modificando en la medida que se necesiten algunas otras variables.
+
+CREATE TABLE tablas 
+(
+  cntry integer,
+  year integer,
+  sample integer,
+  serial integer,
+  pernum integer,
+  wtper double precision,
+  relate integer,
+  related integer,
+  age integer,
+  sex integer,
+  birthyr integer,
+  nativty integer,
+  bplctry integer,
+  citizen integer, 
+  yrimm integer,
+  yrsimm integer,
+  mgctry3 integer
+);
+
+copy namerica from E'D:\\UnivAutBarcelona\\IPUMS\\NAmerica\\ipumsi_00017.csv' delimiter ',' CSV header;
 
 #La rutina en R requiere de llamar a los latinoamericanos que me interesan que se encuentran en las BD de IPUMS
 #cada país de nacimiento (bplctry) tiene un código.
@@ -33,3 +61,4 @@ migrants.la <- tbl(mig_db, sql('SELECT * FROM namerica WHERE
                                (bplctry=23120) OR (bplctry=23130) OR (bplctry=23140)'))
 migrants.la
 
+#de aquí empieza el análisis demográfico. 
