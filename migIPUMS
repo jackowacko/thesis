@@ -42,7 +42,7 @@ options(encoding = "UTF-8")
 # create a PostgreSQL instance and create one connection.
 m <- dbDriver("PostgreSQL")
 con <- dbConnect(m, user="postgres", password="80190035", dbname="IPUMS", host='localhost', port=5432)
-mig_db <- src_postgres(dbname = 'IPUMS', user = 'postgres', password = '80190035')
+mig_db <- src_postgres(dbname = 'IPUMS', user = 'postgres', password = 'xxxxxxxxx')
 
 migrants.la <- tbl(mig_db, sql('SELECT * FROM namerica WHERE 
                                (bplctry=21010) OR (bplctry=21020) OR (bplctry=21030) OR
