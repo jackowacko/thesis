@@ -1,0 +1,84 @@
+library(rgdal)
+library(spdep)
+library(maptools)
+library(data.table)
+library(dplyr)
+library(sp)
+library(RColorBrewer)
+library(ggplot2)
+library(maptools)
+library(scales)
+library(maps)
+library(geosphere)
+library(shape)
+
+rm(list=ls(all=TRUE))
+options(encoding = "UTF-8")
+
+setwd("D:/UnivAutBarcelona/MAPAS/worldAnalysis")
+
+atr <- fread('mundi.txt', header= TRUE, sep='\t')
+atr <- subset(atr, select = c(1:237))
+
+#Load data from shapefile
+mundo <- readShapePoly("TM_WORLD_BORDERS-0.3.shp")
+plot(mundo)
+
+nuevo <- tbl_df(mundo@data)
+tabla <- as.data.frame.matrix(left_join(nuevo,atr, by = c("UN" = "code")))
+mundo@data <- tabla
+
+x11()
+spplot(mundo,"Paraguay", 
+                main = 'Stock de migrantes en España 2010 según lugar de nacimiento', 
+                at = seq(0,900, by=100),
+                col.regions = brewer.pal(9,"Oranges"))
+
+spplot(mundo, 
+             c("Germany", "Spain", "Italy", "France"), 
+             at = seq(0,900, by=100),
+             col.regions = brewer.pal(7, "Oranges"))
+             
+             ###### GRÁFICOS DE FLUJOS ENTRE PAÍSES
+
+setwd("D:/UnivAutBarcelona/MAPAS/worldAnalysis")
+
+mundo <- readShapePoly("TM_WORLD_BORDERS-0.3.shp")
+
+destinos <- function(base, long, lat, ctry, yr){
+require(shape)
+
+mydf <- (read.csv(base,header=T, dec='.'))
+setorder(mydf, -X2013)
+mydf$nsend <- cut(mydf$X2013, quantile(mydf$X2013, probs = seq(0, 1, 0.1)), 
+                  labels = c('.01','.02','.03','.04','.05','.06','.07','.08','.09','.1'))
+x11()
+plot(mundo, main = paste('Países de destino desde',ctry,'-', yr))
+int<- c('ranking 1-10','ranking 11-20')
+legend(-190,-30, int, cex=1, lty= c(1,1), col=c('red','blue'), lwd=2, bty="n")
+setorder(mundo@data, NAME) # permite ver la tabla adjunta al .shp
+print(mundo@data)
+
+for (i in 11:20) {
+  Arrows(long, lat, mydf[i,]$slong, mydf[i,]$slat, col='blue', lwd = 2,
+          arr.adj = 2, arr.type = "triangle", arr.length = 0.1, lty = 1) 
+}
+
+for (i in 1:10) {
+  Arrows(long, lat, mydf[i,]$slong, mydf[i,]$slat, col='red', lwd = 2,
+          arr.adj = 2, arr.type = "triangle", arr.length = 0.1) 
+}
+box()   
+}
+
+destinos('flow_col.csv', -73.076,   3.900, 'Colombia', 2013)
+destinos('flow_ecu.csv', -78.497,  -1.385, 'Ecuador', 2013)
+destinos('flow_arg.csv', -65.167, -35.377, 'Argentina', 2013)
+destinos('flow_bol.csv', -64.671, -16.715, 'Bolivia', 2013)
+destinos('flow_mex.csv', -102.535, 23.951, 'Mexico', 2013)
+destinos('flow_chile.csv', -69.433, -23.389, 'Chile', 2013)
+destinos('flow_uru.csv', -56.012, -32.800, 'Uruguay', 2013)
+destinos('flow_par.csv', -58.391, -23.236, 'Paraguay', 2013)
+destinos('flow_per.csv', -75.552,  -9.326, 'Peru', 2013)
+
+
