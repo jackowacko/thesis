@@ -1,0 +1,85 @@
+
+library(data.table)
+library(dplyr)
+library(MVA)
+library(cluster)
+library(clValid)
+library(kohonen)
+library(graphics)
+library(ggdendro)
+library(ape)
+library(psych)
+library(GPArotation)
+library(ineq)
+library(reldist)
+library(lawstat)
+
+#################################################################################
+### Análsis de Cluster
+
+dendo <- function(data){
+rownames(data) <- data$country
+data.n <- as.matrix(subset(data, select = c(2:dim(data)[2])))
+a<-princomp(data.n)
+print(loadings(a))
+biplot(a)
+data.n <- t(data.n)
+d <- dist(data.n, method = "manhattan") 
+hc <- hclust(d, method="complete") 
+labs <- rownames(data.n)
+x11()
+ggdendrogram(hc, rotate = T, size = 2.5, segments=T, leaf_labels = TRUE)
+}
+
+#################################################################################
+###concentration measures
+
+concentration <- function(data, year){
+  
+rownames(data) <- data$country
+data.n <- as.matrix(subset(data, select = c(2:dim(data)[2])))
+#data.n <- t(data.n)
+
+hh <- (rep(0,dim(data.n)[2]))
+rr <- (rep(0,dim(data.n)[2]))
+gg <- (rep(0,dim(data.n)[2]))
+tt <- (rep(0,dim(data.n)[2]))
+ee <- (rep(0,dim(data.n)[2]))
+gg2 <- (rep(0,dim(data.n)[2]))
+gg3 <- (rep(0,dim(data.n)[2]))
+
+for(i in 1:dim(data.n)[2]){
+
+h <- Herfindahl(data.n[,i], parameter = 1, na.rm = TRUE)
+r <- Rosenbluth(data.n[,i], na.rm = TRUE)
+
+g  <- gini(data.n[,i])
+g2 <- Gini(data.n[,i], corr = T, na.rm = TRUE)
+#g3 <- gini.index(data.n[,i])
+t <- Theil(data.n[,i], parameter = 0, na.rm = TRUE)
+
+
+hh[i] <- h
+rr[i] <- r
+gg[i] <- g
+gg2[i] <- g2
+#gg3[i] <- g3
+tt[i] <- t
+}
+
+name<-colnames(data.n)
+anno <- as.vector(rep(year,length(name)))
+conc.index<-data.frame(cbind(anno, name, hh, rr, gg, gg2, tt))
+colnames(conc.index)<-c('Año','País', 'Herfindahl', 'Rosenbluth', 
+                        'Gini ineq', 'Gini reldist', 'Theil')
+conc.index
+
+}
+
+c13<-concentration(DO13, 2013)
+c10<-concentration(DO10, 2010)
+c00<-concentration(DO00, 2000)
+c90<-concentration(DO90, 1990)
+
+indexes<-(rbind(c13, c10, c00, c90))
+write.table(indexes, file='indexes.csv', sep = ';')
