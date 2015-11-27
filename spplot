@@ -15,7 +15,7 @@ library(shape)
 rm(list=ls(all=TRUE))
 options(encoding = "UTF-8")
 
-setwd("D:/UnivAutBarcelona/MAPAS/worldAnalysis")
+
 
 atr <- fread('mundi.txt', header= TRUE, sep='\t')
 atr <- subset(atr, select = c(1:237))
