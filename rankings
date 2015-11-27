@@ -9,14 +9,6 @@ library("reshape2")
 library("ggplot2")
 
 
-library(data.table)
-library(dplyr)
-#library(ClustOfVar)
-library(xtable)
-library("reshape2")
-library("ggplot2")
-
-
 setwd(' set the directory ')
 
 tabla <- fread('tabla.txt',header=T, sep='\t', data.table=F)
