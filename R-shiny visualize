@@ -1,0 +1,177 @@
+
+library(RPostgreSQL)
+library(dplyr)
+library(xtable)
+library(pyramid)
+library(dplyr)
+library(data.table)
+library(shiny)
+
+#install.packages('devtools')
+
+#devtools::install_github('rstudio/shinyapps')
+
+shinyapps::setAccountInfo(name='demographycase', token='8240125EADA10A7E49DA808820BDFF4A', secret='13mYxF5tI6S2dr3OXSNybDNHSs8a17XmuGovHa8O')
+
+shinyapps::deployApp('C:/Users/')
+
+# create a PostgreSQL instance and create one connection.
+m <- dbDriver("PostgreSQL")
+con <- dbConnect(m, user="postgres", password="xxxxxxxx", dbname="IPUMS", host='localhost', port=5432)
+mig_db <- src_postgres(dbname = 'IPUMS', user = 'postgres', password = 'xxxxxxxx')
+
+migrants.la <- tbl(mig_db, sql('SELECT * FROM namerica WHERE 
+                              (bplctry=21010) OR (bplctry=21020) OR (bplctry=21030) OR
+                              (bplctry=21040) OR (bplctry=21050) OR (bplctry=21060) OR (bplctry=21070) OR
+                              (bplctry=21080) OR (bplctry=21090) OR (bplctry=21100) OR (bplctry=21110) OR
+                              (bplctry=21120) OR (bplctry=21130) OR (bplctry=21140) OR (bplctry=21150) OR 
+                              (bplctry=21160) OR (bplctry=21170) OR (bplctry=21180) OR (bplctry=21190) OR
+                              (bplctry=21200) OR (bplctry=21210) OR (bplctry=21220) OR (bplctry=21230) OR 
+                              (bplctry=21240) OR (bplctry=21250) OR (bplctry=21260) OR (bplctry=21270) OR 
+                              (bplctry=22010) OR (bplctry=22010) OR (bplctry=22020) OR (bplctry=22030) OR
+                              (bplctry=22040) OR (bplctry=22050) OR (bplctry=22060) OR (bplctry=22070) OR
+                              (bplctry=22080) OR
+                              (bplctry=23010) OR (bplctry=23010) OR (bplctry=23020) OR (bplctry=23030) OR
+                              (bplctry=23040) OR (bplctry=23050) OR (bplctry=23060) OR (bplctry=23070) OR
+                              (bplctry=23080) OR (bplctry=23090) OR (bplctry=23100) OR (bplctry=23110) OR
+                              (bplctry=23120) OR (bplctry=23130) OR (bplctry=23140)'))
+migrants.la
+la<-collect(migrants.la)
+
+#contextual <- fread('contexto.txt', header=T, sep='\t', data.table = F) 
+# setwd("D:/UnivAutBarcelona/IPUMS/NAmerica")
+
+
+########################################################################################
+##   SHINY SERVER
+########################################################################################
+
+data_sets <- c('la')
+
+shinyApp(ui = ui, server = server)
+
+server<-shinyServer(function(input, output) {
+  
+  # Drop-down selection box for which data set
+  output$choose_dataset <- renderUI({
+    selectInput("dataset", "Data set", as.list(data_sets))
+  })
+  
+  # Check boxes
+  output$choose_columns <- renderUI({
+    # If missing input, return to avoid error later in function
+    if(is.null(input$dataset))
+      return()
+    
+    # Get the data set with the appropriate name
+    dat <- get(input$dataset)
+    colnames <- names(dat)
+    
+    # Create the checkboxes and select them all by default
+    #checkboxGroupInput("columns", "Choose columns", 
+                       #choices  = colnames,
+                       #selected = colnames)
+  })
+  
+  
+  # Output the data
+  output$data_table <- renderTable({
+    # If missing input, return to avoid error later in function
+    if(is.null(input$dataset))
+      return()
+    
+    # Get the data set
+    dat <- get(input$dataset)
+    
+    # Make sure columns are correct for data set (when data set changes, the
+    # columns will initially be for the previous data set)
+    if (is.null(input$columns) || !(input$columns %in% names(dat)))
+      return()
+    
+    # Keep the selected columns
+    dat <- dat[, input$columns, drop = FALSE]
+    
+    # Return first 20 rows
+    head(dat, 20)
+  })
+})
+
+library(shiny)
+library(datasets)
+
+# Define server logic required to summarize and view the selected
+# dataset
+shinyServer(function(input, output) {
+  
+  # By declaring datasetInput as a reactive expression we ensure 
+  # that:
+  #
+  #  1) It is only called when the inputs it depends on changes
+  #  2) The computation and result are shared by all the callers 
+  #    (it only executes a single time)
+  #
+  datasetInput <- reactive({
+    switch(input$dataset,
+           "rock" = rock,
+           "pressure" = pressure,
+           "cars" = cars)
+  })
+  
+  # The output$caption is computed based on a reactive expression
+  # that returns input$caption. When the user changes the
+  # "caption" field:
+  #
+  #  1) This function is automatically called to recompute the 
+  #     output 
+  #  2) The new caption is pushed back to the browser for 
+  #     re-display
+  # 
+  # Note that because the data-oriented reactive expressions
+  # below don't depend on input$caption, those expressions are
+  # NOT called when input$caption changes.
+  output$caption <- renderText({
+    input$caption
+  })
+  
+  # The output$summary depends on the datasetInput reactive
+  # expression, so will be re-executed whenever datasetInput is
+  # invalidated
+  # (i.e. whenever the input$dataset changes)
+  output$summary <- renderPrint({
+    dataset <- datasetInput()
+    summary(dataset)
+  })
+  
+  # The output$view depends on both the databaseInput reactive
+  # expression and input$obs, so will be re-executed whenever
+  # input$dataset or input$obs is changed. 
+  output$view <- renderTable({
+    head(datasetInput(), n = input$obs)
+  })
+})
+
+
+########################################################################################
+## UI
+########################################################################################
+
+ui<-shinyUI(pageWithSidebar(
+  
+  headerPanel(""),
+  
+  sidebarPanel(
+    uiOutput("choose_dataset"),
+    
+    uiOutput("choose_columns"),
+    br(),
+    #a(href = "https://gist.github.com/4211337", "Source code")
+  ),
+  
+  
+  mainPanel(
+    tableOutput("data_table")
+  )
+))
+
+
+
