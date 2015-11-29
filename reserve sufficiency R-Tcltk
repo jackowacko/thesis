@@ -1,0 +1,390 @@
+library(tcltk)
+library(tcltk2)
+library(boot)
+library(stats)
+library(PBSmodelling)
+
+Creation of a window with buttons for operationalize reserve sufficiency calculation
+Bachelor thesis National University of Colombia
+
+##Open data bases    BD_R092.txt   BD_R040_V2.txt
+
+base.reser<-read.table('BD_R040_V2.txt',header=TRUE, sep='\t',na.strings='NA',dec=',')
+y<-base.reser$Pago_Total_Fe_Apertura
+x<-base.reser$Saldo_Inicial_Rva
+b<-base.reser$Saldo_Final_Rva
+k<-base.reser$Último_Pago
+z<-as.Date(base.reser$Fecha_Primera_Reserva,format="%d/%m/%Y")
+w<-as.Date(base.reser$Fecha_Último_Pago,format="%d/%m/%Y")
+
+
+#descriptivos
+resumenes<-function(){
+print(summary(base.reser[,-c(1,2,3,4,5)]))
+}
+
+
+##DESCRIPCIÓN DE LA VARIABLE EVOLUCIÓN
+evolución<-function(){
+evolución<-as.numeric(w-z)
+cat('\n','Percentiles de los Siniestros desde la Fecha \n de Apertura hasta Fecha de Pago:','\n')
+percentiles<-quantile(evolución,probs=c(0.01,0.05,0.25,0.5,0.75,0.95,0.99,1))
+print(percentiles)
+hist(evolución,50,main='Evolución de los Siniestros desde la Fecha \n de Apertura hasta Fecha de Pago',col='yellow',ylab='Frecuencia',xlab='Días')
+#per95<-double(1)
+#per95<-percentiles[6]
+#hoy<-abs(as.numeric(Sys.Date()-proyección))
+#resto<-per95-hoy
+#percentiles.hoy<-perc(resto)
+#cat('\n','Percentiles desde la Fecha de Medición:','\n')
+#print(percentiles.hoy)
+}
+
+#GRÁFICOS PARA PRUEBA DE NORMALIDAD
+normalidad<-function(){
+par(mfrow=c(2,2))
+qqnorm(x/1000000,main='Saldo Inicial de Reserva')
+qqnorm(y/1000000,main='Pago Total')
+qqnorm(b/1000000,main='Reserva Final')
+qqnorm(k/1000000,main='Último Pago')
+}
+
+#GRÁFICOS DE DIAGNÓSTICO DE RESERVA
+gráficos.ini.pago<-function(){
+par(mfrow=c(2,2))
+hist(x/1000000,50, main='Saldo Inicial de Reserva',col='yellow',xlim=c(-100,800),xlab='Millones')
+hist(y/1000000,50,main='Pago Total',col='yellow',xlab='Millones')
+boxplot(x/1000000,y/1000000,main='Comparación entre Saldo Inicial de \n Reserva y Pago Total',names=c('Saldo Inicial','Pago Total'),xlab='Millones')
+plot(x/1000000,y/1000000,main='Gráfico de Dispersión',xlab='Saldo Inicial de Reserva (Millones)',ylab='Pago Total (Millones)')
+}
+
+#GRÁFICOS DE DIAGNÓSTICO DE RESERVA
+gráficos.fin.ult<-function(){
+par(mfrow=c(2,2))
+hist(b/1000000,50, main='Saldo Final de Reserva',col='yellow',xlim=c(-100,800),xlab='Millones')
+hist(k/1000000,50,main='Último Pago',col='yellow',xlab='Millones')
+boxplot(b/1000000,k/1000000,main='Comparación entre Saldo de Reserva \n Final y Ultimo Pago',names=c('Reserva Final','Último Pago'),xlab='Millones')
+plot(b/1000000,k/1000000,main='Gráfico de Dispersión',xlab='Saldo de Reserva Final (Millones)',ylab='Último Pago (Millones)')
+}
+
+#bootstrap DIFERENCIA DE MEDIAS saldo inicial vs pago total
+bootstraping.ini<-function(){
+dif.medias<-function(D,d){
+m1<-mean(D[d,6])
+m2<-mean(D[d,8])
+dif.med<-m1-m2
+}
+dif.boot<-boot(base.reser,dif.medias,R=1000)
+dif.boot$t
+#hist(dif.boot$t,50,main='Histograma Bootstrap para la Hipótesis de \n Diferencia de Medias',col='yellow')
+dife.boot.ci<-boot.ci(dif.boot,type='perc')
+dife.boot.ci$percent[4]
+print(dife.boot.ci)
+cat('\n \n','Media de Diferencia de Medias Saldo Inicial vs Pago Total=',mean(dif.boot$t),'\n \n')
+cat('\n \n','%IDR sobre pago:',mean(dif.boot$t)/median(y))
+cat('\n IC al 95%',dife.boot.ci$percent[4]/median(y),dife.boot.ci$percent[5]/mean(y),'\n \n')
+cat('\n \n','%IDR sobre reserva:',mean(dif.boot$t)/median(x))
+cat('\n IC al 95%',dife.boot.ci$percent[4]/median(x),dife.boot.ci$percent[5]/mean(x),'\n \n')
+}
+
+#bootstrap DIFERENCIA DE MEDIAS Reserva Final vs. Último.pago
+bootstraping.fin<-function(){
+dif.medias<-function(D,d){
+m1<-mean(D[d,7])
+m2<-mean(D[d,9])
+dif.med<-m1-m2
+}
+dif.boot<-boot(base.reser,dif.medias,R=1000)
+dif.boot$t
+#hist(dif.boot$t,50,main='Histograma Bootstrap para la Hipótesis de \n Diferencia de Medias',col='yellow')
+dife.boot.ci<-boot.ci(dif.boot,type='perc')
+dife.boot.ci$percent[4]
+print(dife.boot.ci)
+cat('\n \n','Media de Diferencia de Medias Reserva Final vs. Último.pago=',mean(dif.boot$t),'\n \n')
+cat('\n \n','%IDR sobre pago:',mean(dif.boot$t)/median(k))
+cat('\n IC al 95%',dife.boot.ci$percent[4]/median(k),dife.boot.ci$percent[5]/mean(k),'\n \n')
+cat('\n \n','%IDR sobre reserva:',mean(dif.boot$t)/median(b))
+cat('\n IC al 95%',dife.boot.ci$percent[4]/median(b),dife.boot.ci$percent[5]/mean(b),'\n \n')
+}
+
+#--------------------------------------------------------------------------------------------------------------
+#bootstrap DIFERENCIA DE MEDIAS BASE COMPLETA saldo inicial vs pago total
+boot.ramo<-function(){
+
+dif.medias1<-function(D,d){
+m1<-mean(D[d,6])
+m2<-mean(D[d,8])
+dif.med<-m1-m2
+}
+dif.boot.ini<-boot(base.reser,dif.medias1,R=10000)
+dife.boot.ci.ini<-boot.ci(dif.boot.ini,type='perc')
+
+dif.medias2<-function(D,d){
+m1<-mean(D[d,7])
+m2<-mean(D[d,9])
+dif.med<-m1-m2
+}
+dif.boot.fin<-boot(base.reser,dif.medias2,R=10000)
+dife.boot.ci.fin<-boot.ci(dif.boot.fin,type='perc')
+
+indicadores.ramo<-matrix(data=NA,ncol=6,nrow=2)
+indicadores.ramo[1,1]<-dife.boot.ci.ini$percent[4]/median(x)
+indicadores.ramo[1,2]<-mean(dif.boot.ini$t)/median(x)
+indicadores.ramo[1,3]<-dife.boot.ci.ini$percent[5]/median(x)
+indicadores.ramo[1,4]<-dife.boot.ci.ini$percent[4]/median(y)
+indicadores.ramo[1,5]<-mean(dif.boot.ini$t)/median(y)
+indicadores.ramo[1,6]<-dife.boot.ci.ini$percent[5]/median(y)
+
+indicadores.ramo[2,1]<-dife.boot.ci.fin$percent[4]/median(b)
+indicadores.ramo[2,2]<-mean(dif.boot.fin$t)/median(b)
+indicadores.ramo[2,3]<-dife.boot.ci.fin$percent[5]/median(b)
+indicadores.ramo[2,4]<-dife.boot.ci.fin$percent[4]/median(k)
+indicadores.ramo[2,5]<-mean(dif.boot.fin$t)/median(k)
+indicadores.ramo[2,6]<-dife.boot.ci.fin$percent[5]/median(k)
+
+colnames(indicadores.ramo)<-c('LI.rva','IDR.rva','LS.rva','LI.pago','IDR.pago','LS.pago')
+rownames(indicadores.ramo)<-c('Reserva.Inicial.vs.Pago.Total','Reserva.Final.vs.Último.Pago')
+print(indicadores.ramo)
+}
+
+#---------------------------------------------------------------------------------------------------------------
+
+#PRUEBA T PARA DIFERENCIA DE MEDIAS saldo inicial vs pago total
+dif.medias.ini.pago<-function(){
+dif.t.test<-t.test(x,y,alternative='two.sided', conf.level=.95, paired=TRUE)
+print(dif.t.test);
+idrp<-((dif.t.test$estimate)/median(y))
+conf.int.idrp<-(dif.t.test$conf.int/median(y))
+cat('\n\n %IDR sobre Pago=',idrp,'\n','IC al 95%:',conf.int.idrp,'\n\n')
+idrr<-((dif.t.test$estimate)/median(x))
+conf.int.idrr<-(dif.t.test$conf.int/median(x))
+cat('\n\n %IDR sobre Reserva=',idrr,'\n','IC al 95%:',conf.int.idrr,'\n\n')
+}
+
+#PRUEBA T PARA DIFERENCIA DE MEDIAS saldo final vs último pago
+dif.medias.fin.ult<-function(){
+dif.t.test<-t.test(b,k,alternative='two.sided', conf.level=.95, paired=TRUE)
+print(dif.t.test)
+idrp<-((dif.t.test$estimate)/median(k))
+conf.int.idrp<-(dif.t.test$conf.int/median(k))
+cat('\n\n %IDR sobre Pago=',idrp,'\n','IC al 95%:',conf.int.idrp,'\n\n')
+idrr<-((dif.t.test$estimate)/median(b))
+conf.int.idrr<-(dif.t.test$conf.int/median(b))
+cat('\n\n %IDR sobre Reserva=',idrr,'\n','IC al 95%:',conf.int.idrr,'\n\n')
+}
+#---------------------------------------------------------------------------------------------------------------
+#______________________________________________________________________________________________________________________________________________
+#
+
+todo<-function(){
+amparo<-as.factor(base.reser$Amparo)
+n<-length(base.reser[,2])
+año.amparo<-matrix(data=0,nrow=n,ncol=4)
+num.pos.vec.año=1
+num.pos.vec.amp=1
+vector.años<-double(n)
+vector.amparos<-double(n)
+library(boot)
+n.lista = 1
+
+  #------------------------------------------------
+for(i in 1:n){
+
+  año<-base.reser[i,3]
+  encontro.año=0
+  for(k in 1:num.pos.vec.año){
+    if(vector.años[k]==año) encontro.año=1
+  }
+  if(encontro.año==0){
+    vector.años[num.pos.vec.año]=año
+    num.pos.vec.año=num.pos.vec.año+1
+    }
+}
+ count=0
+num.pos.vec.año<-num.pos.vec.año-1
+
+   for(k in 1:n){
+   if(vector.años[k]!=0) count=count+1
+   }
+
+   vector.años.n<-double(count)
+   for(k in 1:count) vector.años.n[k]<-vector.años[k]
+  print(vector.años.n)
+
+  #--------------------------------------------------
+
+for(i in 1:n){
+
+  amparo<-base.reser[i,2]
+  encontro.amparo=0
+  for(k in 1:num.pos.vec.año){
+    if(vector.amparos[k]==amparo) encontro.amparo=1
+  }
+  if(encontro.amparo==0){
+    vector.amparos[num.pos.vec.amp]=amparo
+    num.pos.vec.amp=num.pos.vec.amp+1
+    }
+}
+
+num.pos.vec.amp<-num.pos.vec.amp-1
+count=0
+   for(k in 1:n){
+   if(vector.amparos[k]!=0) count=count+1
+   }
+      #print(vector.amparos)
+      #print(count)
+
+   vector.amparos.n<-double(count)
+   for(k in 1:count) vector.amparos.n[k]<-vector.amparos[k]
+  print(vector.amparos.n)
+
+#-------------------------------------
+
+vector.años.n<-sort(vector.años.n)
+vector.amparos.n<-sort(vector.amparos.n)
+pos.lista<-num.pos.vec.amp*num.pos.vec.año
+lista<-vector("list",pos.lista)
+
+contador<-1
+for(i in 1:num.pos.vec.año){
+  for(k in 1:num.pos.vec.amp){
+    for(j in 1:n){
+      if((base.reser[j,3]==vector.años.n[i]) && (base.reser[j,2]==vector.amparos.n[k])){
+      año.amparo[contador,1]<-base.reser[j,6]
+      año.amparo[contador,2]<-base.reser[j,7]
+      año.amparo[contador,3]<-base.reser[j,8]
+      año.amparo[contador,4]<-base.reser[j,9]
+      contador=contador+1
+      }
+    }
+   #print(año.amparo)
+   cuentafilas =0
+   for (z in 1:n){
+      if(año.amparo[z] != 0) cuentafilas = cuentafilas +1
+   }
+  # print(cuentafilas)
+
+   if (cuentafilas != 0)
+
+
+     año.amparo.nuevo<-matrix(data=0,nrow=cuentafilas,ncol=4)
+
+
+     for(o in 1:cuentafilas){
+      for(q in 1:4){
+        año.amparo.nuevo[o,q]=año.amparo[o,q]
+      }
+     }
+  #print(año.amparo.nuevo)
+
+  lista[[n.lista]]<-año.amparo.nuevo
+  n.lista<-n.lista+1
+     for(p in 1:n){
+     año.amparo[p,1]<-0
+     año.amparo[p,2]<-0
+     año.amparo[p,3]<-0
+     año.amparo[p,4]<-0
+     }
+     contador=1
+    }
+  }
+  año.amparo.nuevo
+  n.lista<-n.lista-1
+  lista
+
+#--------------------------------------------------------------
+
+dif.medias1<-function(D,d){
+m1<-mean(D[d,1])
+m2<-mean(D[d,3])
+dif.med.ini.pago<-(m1-m2)/m1
+}
+dif.medias3<-function(D,d){
+m1<-mean(D[d,1])
+m2<-mean(D[d,3])
+dif.med.ini.pago<-(m1-m2)/m2
+}
+
+dif.medias2<-function(D,d){
+m3<-mean(D[d,2])
+m4<-mean(D[d,4])
+dif.med.rva.fin<-(m3-m4)/m3
+}
+dif.medias4<-function(D,d){
+m3<-mean(D[d,2])
+m4<-mean(D[d,4])
+dif.med.rva.fin<-(m3-m4)/m4
+}
+
+
+resultado<-matrix(data=NA,ncol=14,nrow=pos.lista)
+
+for(i in 1:n.lista){
+aux<-lista[[i]]
+
+dif.boot.ini.fin.rva<-boot(aux,dif.medias1,R=2000)
+dif.boot.ini.fin.pag<-boot(aux,dif.medias3,R=2000)
+dif.boot.fin.ult.rva<-boot(aux,dif.medias2,R=2000)
+dif.boot.fin.ult.pag<-boot(aux,dif.medias2,R=2000)
+
+dif.boot.ini.fin.ci.rva<-boot.ci(dif.boot.ini.fin.rva,type='perc')
+dif.boot.ini.fin.ci.pag<-boot.ci(dif.boot.ini.fin.pag,type='perc')
+dif.boot.fin.ult.ci.rva<-boot.ci(dif.boot.fin.ult.rva,type='perc')
+dif.boot.fin.ult.ci.pag<-boot.ci(dif.boot.fin.ult.pag,type='perc')
+
+
+resultado[i,3]<-dif.boot.ini.fin.ci.rva$percent[4]
+resultado[i,4]<-mean(dif.boot.ini.fin.rva$t)
+resultado[i,5]<-dif.boot.ini.fin.ci.rva$percent[5]
+
+resultado[i,6]<-dif.boot.ini.fin.ci.pag$percent[4]
+resultado[i,7]<-mean(dif.boot.ini.fin.pag$t)
+resultado[i,8]<-dif.boot.ini.fin.ci.pag$percent[5]
+
+resultado[i,9]<-dif.boot.fin.ult.ci.rva$percent[4]
+resultado[i,10]<-mean(dif.boot.fin.ult.rva$t)
+resultado[i,11]<-dif.boot.fin.ult.ci.rva$percent[5]
+
+resultado[i,12]<-dif.boot.fin.ult.ci.pag$percent[4]
+resultado[i,13]<-mean(dif.boot.fin.ult.pag$t)
+resultado[i,14]<-dif.boot.fin.ult.ci.pag$percent[5]
+}
+
+counter=1
+for(y in 1:num.pos.vec.año){
+  for(z in 1:num.pos.vec.amp){
+    resultado[counter,1]=vector.años.n[y]
+    counter=counter+1
+  }
+}
+
+counter = 1
+for (y in 1 : num.pos.vec.año){
+  for (z in 1 : num.pos.vec.amp){
+    resultado[counter,2]=vector.amparos.n[z]
+    counter=counter+1
+  }
+}
+
+colnames(resultado) <- c('Año','Amparo',"LI.ini.rva","IDR.ini.rva","LS.ini.rva","LI.ini.pago","IDR.ini.pago","LS.ini.pago","LI.fin.rva","IDR.fin.rva","LS.fin.rva","LI.fin.pago","IDR.fin.pago","LS.fin.pago")
+print(resultado)
+}
+
+
+#Creation of interface GUI
+createWin('ventana1_1.txt')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
