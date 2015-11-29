@@ -1,6 +1,5 @@
 
 
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -18,9 +17,25 @@ International Migration of Latinamerican community has been seen commonly by cou
 
 <a href="https://demographycase.wordpress.com/"> go to El Flaco's blog!</a>
 
-<div style="background-color: green; color:white; padding:20px;">
+<hr>
+<p><b>Number of Surveys Recomended </b></p>
 
-<h2>London</h2>
+<table style="width:100%">
+  <tr>
+    <td>Origin</td>
+    <td>Network</td> 
+    <td>50</td>
+  </tr>
+  <tr>
+    <td>Destination</td>
+    <td>Network</td> 
+    <td>94</td>
+  </tr>
+</table>
+<hr>
+
+<div style="background-color: green; color:white; padding:20px;">
+<h2>Social Network Analysis</h2>
 
 <p>
 Social Networks Analysis (SNA) has been used to obtain descriptions about a wide range of especificities where social 
@@ -30,11 +45,7 @@ genetics and more. A network is composed by nodes or vertices, which represents 
 places and in this case municipalities and links or edges which can be describe as relationships or interactions
 that connect them, like the number of migrants from one municipality to another having a singular direction.
 </p>
-
-
 </div>
 
 </body>
 </html>
-
-
