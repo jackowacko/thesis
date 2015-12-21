@@ -1,0 +1,68 @@
+
+quinquenal <- function(vec){
+  
+  de0a4=0
+  de5a10=0
+  de10a14=0
+  de15a19=0
+  de20a24=0
+  de25a29=0
+  de30a34=0
+  de35a39=0
+  de40a44=0
+  de45a49=0
+  de50a54=0
+  de55a59=0
+  de60a64=0
+  de65a69=0
+  de70a74=0
+  de75a79=0
+  de80a84=0
+  de85a89=0
+  de90a94=0
+  mas.100=0
+  
+  for(i in 1: length(vec)){
+    
+    ifelse(ages[i] >=0 & ages[i] <=4 , de0a4 <- de0a4 + vec[i],
+           ifelse(ages[i] >=5 & ages[i] <=10 , de5a10 <- de5a10 + vec[i],
+                  ifelse(ages[i] >=10 & ages[i] <=14 , de10a14 <- de10a14 + vec[i],
+                         ifelse(ages[i] >=15 & ages[i] <=19 , de15a19 <- de15a19 + vec[i],
+                                ifelse(ages[i] >= 20 & ages[i] <= 24 , de20a24 <- de20a24 + vec[i],
+                                       ifelse(ages[i] >=25 & ages[i] <=29 , de25a29 <- de25a29 + vec[i],
+                                              ifelse(ages[i] >= 30 & ages[i] <=34 , de30a34 <- de30a34 + vec[i],
+                                                     ifelse(ages[i] >=35 & ages[i] <=39 , de35a39 <- de35a39 + vec[i],
+                                                            ifelse(ages[i] >=40 & ages[i] <=44 , de40a44 <- de40a44 + vec[i],
+                                                                   ifelse(ages[i] >=45 & ages[i] <=49 , de45a49 <- de45a49 + vec[i],
+                                                                          ifelse(ages[i] >=50 & ages[i] <=54 , de50a54 <- de50a54 + vec[i],
+                                                                                 ifelse(ages[i] >=55 & ages[i] <=59 , de55a59 <- de55a59 + vec[i],
+                                                                                        ifelse(ages[i] >=60 & ages[i] <=64 , de60a64 <- de60a64 + vec[i],
+                                                                                               ifelse(ages[i] >=65 & ages[i] <=69 , de65a69 <- de65a69 + vec[i],
+                                                                                                      ifelse(ages[i] >=70 & ages[i] <=74 , de70a74 <- de70a74 + vec[i],
+                                                                                                             ifelse(ages[i] >=75 & ages[i] <= 80, de75a79 <- de75a79 + vec[i],
+                                                                                                                    ifelse(ages[i] >=80 & ages[i] <=84 , de80a84 <- de80a84 + vec[i],
+                                                                                                                           ifelse(ages[i] >=85 & ages[i] <=89 , de85a89 <- de85a89 + vec[i],
+                                                                                                                                  ifelse(ages[i] >=90 & ages[i] <=95 , de90a94 <- de90a94 + vec[i],
+                                                                                                                                         ifelse(ages[i] >=95 & ages[i] <=99 , de95a99 <- de95a99 + vec[i],
+                                                                                                                                                ifelse(ages[i] >=100 , mas.100 <- mas.100 + vec[i], mas.100)
+                                                                                                                                                
+                                                                                                                                         ))))))))))))))))))))
+  }
+  
+  quinq <- data.frame(rbind(de0a4, de5a10, de10a14, de15a19, de20a24, de25a29, de30a34, de35a39,
+                            de40a44, de45a49, de50a54, de55a59, de60a64, de65a69, de70a74, de75a79, 
+                            de80a84, de85a89, de90a94, mas.95))
+  colnames(quinq) <- 'N'
+  
+  quinq <- cbind(n.ages, quinq)
+  print(quinq)
+}
+
+n.ages <- c(5,10,15,20,25,30,35,40,45,50,44,60,65,70,75,80,85,90,95,100)
+
+hombres.5 <- quinquenal(male)
+mujeres.5 <- quinquenal(female)
+
+piram.5 <- cbind(n.ages, hombres.5[,2], mujeres.5[,2])
+colnames(piram.5) <- c(Edad, Hombre, Mujer)
+
