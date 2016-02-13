@@ -8,7 +8,7 @@ paises <- c(21040, 21020, 21030, 21040, 21050, 21060, 21070, 21080, 21090, 21100
 
 USA$latino <- with(USA, ifelse(USA$BPLCTRY %in% paises, 'latinoamerica', 'otro'))
 la <- USA[USA$latino == 'latinoamerica', ]
-id <- unique(USA$SERIAL)
-usa.new <- USA[USA$SERIAL %in% paises,]
+id <- unique(la$SERIAL)
+usa.new <- USA[USA$SERIAL %in% id,]
 usa.new
 dim(usa.new)
