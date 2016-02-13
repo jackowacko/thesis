@@ -1,0 +1,14 @@
+USA <- fread('ipumsi_00017.csv',header=T, sep=',', data.table=F)
+
+
+paises <- c(21040, 21020, 21030, 21040, 21050, 21060, 21070, 21080, 21090, 21100, 21110, 21120, 
+             21130, 21140, 21150, 21160, 21170, 21180, 21190, 21200, 21210, 21220, 21230, 21240,
+             21450, 21260, 21270, 22010, 22020, 22030, 22040, 22050, 22060, 22070, 22080, 23010, 
+             23020, 23030, 23040, 23050, 23060, 23070, 23080, 23090, 23100, 23110, 23120, 23130, 23140)
+
+USA$latino <- with(USA, ifelse(USA$BPLCTRY %in% paises, 'latinoamerica', 'otro'))
+la <- USA[USA$latino == 'latinoamerica', ]
+id <- unique(USA$SERIAL)
+usa.new <- USA[USA$SERIAL %in% paises,]
+usa.new
+dim(usa.new)
