@@ -13,6 +13,15 @@ LatinHomes <- left_join(dataIPUMS %>%
                         select(serial) %>% distinct(serial), dataIPSUM)
 
 
+LatinHomes <- left_join(dataIPUMS %>% 
+                        filter(bplctry %in% paises, year = 2010) %>% 
+                        distinct(serial) %>%
+                        select(serial) %>% , dataIPSUM, copy=T)
+
+
+
+
+
 ######################################
 ### Así lo tengo hecho yo SIN dplyr
 
