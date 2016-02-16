@@ -1,7 +1,7 @@
 ###############################################
 ### Así es como ud me dijo que hiciera con dplyr
 
-dataIPUMS <- tbl(mig_db, sql('SELECT * FROM namerica WHERE year = 2010'))
+dataIPUMS <- tbl(mig_db, 'namerica')
 
 paises <- c(21040, 21020, 21030, 21040, 21050, 21060, 21070, 21080, 21090, 21100, 21110, 21120, 
             21130, 21140, 21150, 21160, 21170, 21180, 21190, 21200, 21210, 21220, 21230, 21240,
@@ -9,7 +9,7 @@ paises <- c(21040, 21020, 21030, 21040, 21050, 21060, 21070, 21080, 21090, 21100
             23020, 23030, 23040, 23050, 23060, 23070, 23080, 23090, 23100, 23110, 23120, 23130, 23140)
 
 LatinHomes <- left_join(dataIPUMS %>% 
-                        filter(bplctry %in% paises) %>% 
+                        filter(bplctry %in% paises, year = 2010) %>% 
                         select(serial) %>% distinct(serial), dataIPSUM)
 
 
