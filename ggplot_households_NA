@@ -1,0 +1,158 @@
+library(bit64)
+library(RPostgreSQL)
+library(dplyr)
+library(data.table)
+options(encoding = "UTF-8")
+library(ggplot2)
+library(scales)
+
+#00023 es estados unidos
+
+start.time <- Sys.time()
+
+USA <- fread('ipumsi_00025.csv',header=T, sep=',', data.table=F)
+paises.n <- fread('paises.csv',header=T, sep=',', data.table=F)
+
+#paises.n <- fread('caribe1.csv',header=T, sep=',', data.table=F)
+#paises.n <- fread('caribe2.csv',header=T, sep=',', data.table=F)
+#paises.n <- fread('suram1.csv',header=T, sep=',', data.table=F)
+#paises.n <- fread('suram2.csv',header=T, sep=',', data.table=F)
+
+#write.table(USA, file='USA.csv', sep = ',')
+
+paises <- paises.n$code
+
+USA$latino <- with(USA, ifelse(USA$BPLCOUNTRY %in% paises, 'latinoamerica', 'otro'))
+la <- USA[USA$latino == 'latinoamerica', ]
+id <- unique(la$SERIAL)
+usa.new <- USA[USA$SERIAL %in% id,]
+rm(USA)
+
+filter(usa.new, latino == 'latinoamerica')
+
+######
+####################################################
+#head(USA)
+#table(USA$BPLCOUNTRY)
+#
+#hogares <- group_by(usa.new, SERIAL)
+#
+#hogares
+#x11()
+#barplot(table(group_size(hogares)))
+#n_groups(hogares)
+#tam.hogar <- table(group_size(hogares))
+#tam.hogar
+
+#tipo.hogar <- 2 ^ group_size(hogares)
+#table(tipo.hogar)
+
+######################################
+
+#prueba <- usa.new[1:30,]
+#prueba <- filter(prueba, RELATE == c(1,2)) 
+
+#attach(prueba)
+
+#homo = 0
+#hetero = 0
+#codes <- unique(prueba$SERIAL)
+#hogares <- group_by(prueba, SERIAL)
+#tam.hogar <- group_size(hogares)
+
+
+#for(i in 1 : length(codes)){
+  
+ # b=1
+  
+ # for(j in 1 : length(SERIAL)){
+    
+
+ #   if(codes[i] == SERIAL[j])
+           
+          # ifelse((BPLCTRY[1] == BPLCTRY[2]) & (b == 1), (homo = homo + 1) & (b = 0) & (i = j + tam.hogar[j]), (hetero = hetero + 1))
+
+#  }
+  
+#}
+
+#print(homo)
+#print(hetero)
+
+######################## 
+
+
+#tab <- USA %>% mutate(latino = ifelse(BPLCTRY %in% paises, 'la', 'otro'))  %>% 
+ # mutate(pot2 = 2 ^ RELATE) %>% group_by(latino, BPLCTRY) %>% summarise(sum(pot2))
+
+#tab.la <- setorder(data.frame(tab[tab$latino=='la',]), BPLCTRY)
+#colnames(tab.la) <- c('latino','BPLCTRY','SERIAL','n')
+#tab.la
+##write.csv(tab.la, file='tablatina.csv')
+
+#a <- cbind(tab.la,paises.n) 
+#  
+#tabla.f <- setorder(a, -code)
+#  
+#### CUANTOS LATINOAMERICANOS EXISTEN POR HOGAR , REL.PAR Y SEXO
+#tab2 <- usa.new %>% group_by(latino, SERIAL, RELATE, SEX) %>% summarise(n())
+#tab2
+
+##write.csv(tab2, file='tablatina.csv')
+
+#tab3 <- USA  %>% mutate(latino = ifelse(BPLCTRY %in% paises, 'la', 'otro')) %>% 
+#  group_by(latino, BPLCTRY, SERIAL, RELATE, SEX) %>% summarise(n=n())
+#data.frame(tab3)
+#write.csv(tab2, file='tablatina.csv')
+############## 
+
+######################## prueba con dplyr
+
+
+
+usa.new8010 <- filter(usa.new, YEAR == 1980 | YEAR == 1990 | YEAR == 2000 | YEAR == 2010)
+
+head(usa.new8010)
+tail(usa.new8010)
+
+table.pl <- usa.new8010  %>%   
+  mutate(parentezco = factor(RELATE, 
+                      levels = c(1, 2, 3, 4, 5), 
+                      labels = c("Jefe Hogar", 
+                                 "Esposo/a", 
+                                 "Hijo/a", 
+                                 "Otros parientes",
+                                 'No parientes'))) %>%
+  mutate(sexo = factor(SEX, 
+                             levels = c(1, 2), 
+                             labels = c("Hombre", 
+                                        "Mujer"))) %>%
+  mutate(YR = factor(YEAR, 
+                      levels = c(1980, 1990, 2000, 2010), 
+                      labels = c('1980',
+                                 "1990", 
+                                 "2000",                   
+                                 "2010"))) %>%
+  mutate(p.nac = factor(BPLCOUNTRY, 
+                     levels = paises.n$code, 
+                     labels = paises.n$pais)) %>%
+group_by(YR, sexo, parentezco) %>% summarise(n=n()) %>% mutate(percent = (n / sum(n))) %>% ungroup()
+
+head(table.pl)
+write.csv(table.pl, 'tbl_YR_parentezco.csv')
+
+x11()
+p <-  ggplot(table.pl, aes(x = factor(sexo), y = percent, fill = factor(parentezco))) + 
+  geom_bar(position = "dodge", stat = "identity", col = 'black') +
+ scale_fill_brewer(palette = 'YlOrRd') + 
+  labs(list(x = 'Sexo', 
+            y = "Porcentaje", 
+            fill = "Relación de parentezco")) + 
+  theme(legend.position = "bottom") + 
+  scale_y_continuous(labels = percent) + 
+  facet_grid(YR~.)
+p
+
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.takenf
