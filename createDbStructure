@@ -1,0 +1,48 @@
+install.packages('RSQLite')
+library(RSQLite)
+setwd("~/Documentos/Sebas Proj")
+
+
+
+drivSQL <- dbDriver("SQLite")
+
+conSQL <- dbConnect(drivSQL,dbname="ipsum_tesis_db.sqlite" )
+
+
+
+createTable_ddl <- paste("
+        CREATE  TABLE IF NOT EXISTS ext30 (cntry integer,
+              year integer,
+              sample integer,
+              serial bigint,
+              pernum integer,
+              perwt double precision,
+              resident integer,
+              age integer,
+              age2 integer,
+              age3 integer,
+              sex integer,
+              nativity integer,
+              bplcountry integer,
+              citizen integer,
+              nation integer, 
+              yrimm integer,
+              yrimm2 integer,
+              yrsimm integer,
+              yrsimm2 integer
+        );")
+
+dbExecute(conSQL,createTable_ddl)
+
+ sapply(list(  
+ paste(" CREATE INDEX serial_idx ON ext30  (serial);")
+ ,paste( "CREATE INDEX pernum_idx ON ext30  (pernum); ")
+ ,paste( "CREATE INDEX bplcountry_idx ON ext30  (bplcountry);")
+ ,paste( "CREATE INDEX serial_pernum_idx ON ext30  (serial , pernum);")
+ ,paste( " CREATE INDEX serial_pernum_bplcountry_idx ON ext30  (serial, pernum, bplcountry);")),function(x){dbExecute(conSQL,x)})
+       
+ dbWriteTable(conSQL,"ext30","ipumsi_00030.csv",
+              sep=",",header=F,append=T)
+
+dbListTables(conSQL)
+dbDisconnect(conSQL)
