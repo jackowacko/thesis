@@ -1,0 +1,14 @@
+####
+# Extract migrants from Latin America  ipsum_tesis_db.sqlite database
+#
+paises <- read.csv("https://raw.githubusercontent.com/elflacosebas/thesis/master/paises.csv")
+
+
+ipsumDB <- src_sqlite(path = "ipsum_tesis_db.sqlite")
+
+ext30 <- tbl(ipsumDB,"ext30")
+
+#collect latino serial ID data into r workspace  ~ 4MM of data, for more big data is better  use dbWriteTable 
+latinoId <- ext30 %>% filter(bplcountry %in% paises$code) %>% select(serial) %>% distinct() %>% collect(n=Inf)
+
+LAmigrantsUSA <- ext30 %>% filter(serial %in% latinoId)
