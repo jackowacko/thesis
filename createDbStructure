@@ -37,9 +37,9 @@ dbExecute(conSQL,createTable_ddl)
  sapply(list(  
  paste(" CREATE INDEX serial_idx ON ext30  (serial);")
  ,paste( "CREATE INDEX pernum_idx ON ext30  (pernum); ")
- ,paste( "CREATE INDEX cntry_idx ON ext30  (cntry);")
+ ,paste( "CREATE INDEX bplcountry_idx ON ext30  (bplcountry);")
  ,paste( "CREATE INDEX serial_pernum_idx ON ext30  (serial , pernum);")
- ,paste( " CREATE INDEX serial_pernum_cntry_idx ON ext30  (serial, pernum, cntry);")),function(x){dbExecute(conSQL,x)})
+ ,paste( " CREATE INDEX serial_pernum_bplcountry_idx ON ext30  (serial, pernum, bplcountry);")),function(x){dbExecute(conSQL,x)})
        
  dbWriteTable(conSQL,"ext30","ipumsi_00030.csv",
               sep=",",header=F,append=T)
