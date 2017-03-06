@@ -1,0 +1,86 @@
+####
+# Extract migrants from Latin America  ipsum_tesis_db.sqlite database
+#
+paises <- read.csv("https://raw.githubusercontent.com/elflacosebas/thesis/master/paises.csv")
+
+
+ipsumDB <- src_sqlite(path = "ipsum_tesis_db.sqlite")
+
+ext30 <- tbl(ipsumDB,"ext30")
+
+#collect latino serial ID data into r workspace  ~ 4MM of data, for more big data is better  use dbWriteTable 
+latinoId <- ext30 %>% filter(bplcountry %in% paises$code) %>% select(serial) %>% distinct() %>% collect(n=Inf)
+
+LAmigrants <- ext30 %>% filter(serial %in% local(latinoId$serial)) %>% select(serial , bplcountry, cntry)  %>% 
+compute(x=. ,name='latin_migrants',temporary=F,indexes = list("bplcountry","serial") )
+
+paises_centroids <- read.csv("countryCentroids.csv", stringsAsFactors = F)
+colnames(paises_centroids ) <- c("country",	"latitude",	"longitude",	"pais")
+colnames(ext30)
+
+dbWriteTable(conSQL,"countries",paises,
+             sep=",",header=F,append=F)
+
+codeCentCountries[2,3:5] <- c("RD",18.735693,	-70.162651)
+colnames(codeCentCountries)[1] <- "bplcountry"
+
+centroidUSA <- c(37.09024,	-95.712891)
+60.128161   18.643501                                       Sweden
+
+dbWriteTable(conSQL,"countries_centroids",codeCentCountries,
+             sep=",",header=F,append=F)
+#dbRemoveTable(conSQL, "latin_migrants_usa_coords")
+countries_centroids <- tbl(ipsumDB,"countries_centroids")
+
+LAmigrants %>% compute(x=. ,name='latin_migrants_usa',temporary=F,indexes = list("bplcountry","serial", "cntry") )
+
+latin_migrants <- tbl(ipsumDB, "latin_migrants")
+
+dbListFields(conn = conSQL ,"latin_migrants")
+dbListTables(conSQL)
+
+left_join(LAmigrants, countries_centroids, by= "bplcountry") %>% 
+  compute(x=. ,name='latin_migrants_coords',temporary=F,indexes = list("bplcountry","serial","cntry") )
+
+latinCoords <- tbl(ipsumDB, 'latin_migrants_coords') %>% filter(!is.na(pais), cntry == 40500)
+
+latinCoords_df <- latinCoords  %>% collect()
+
+data2plot <- cbind(latinCoords_df,t(centroidUSA ))
+data2plot$oriLat <- as.numeric(data2plot$oriLat)
+data2plot$oriLon <- as.numeric(data2plot$oriLon)
+colnames(data2plot)[6:9] <- c("oriLat","oriLon","desLat","desLon") 
+
+# xquiet<- scale_x_continuous("", breaks=NULL)
+# yquiet<-scale_y_continuous("", breaks=NULL)
+# quiet<-list(xquiet, yquiet)
+# 
+# ggplot(data2plot, aes(oriLat, oriLon))+
+#   #The next line tells ggplot that we wish to plot line segments. The "alpha=" is line transparency and used below 
+#   geom_segment(aes(x=oriLat, y=oriLon,xend=desLat, yend=desLon), col="white")+
+#   #Here is the magic bit that sets line transparency - essential to make the plot readable
+#   scale_alpha_continuous(range = c(0.03, 0.3))+
+#   #Set black background, ditch axes and fix aspect ratio
+#   theme(panel.background = element_rect(fill='black',colour='black'))+quiet+coord_equal()
+
+
+xlim <- c(-171.738281, -30)
+ylim <- c(-50.039321, 51.856229)
+colnames(paises_centroids) <- c("abb","lat","lon", "name")
+map("world", col="#191919", fill=TRUE, bg="#000000", lwd=0.05, xlim=xlim, ylim=ylim)
+# fsub <- flights[flights$airline == carriers[i],]
+# fsub <- fsub[order(fsub$cnt),]
+# maxcnt <- max(fsub$cnt)
+samp1 <- sample(10:nrow(paises_centroids)-10,10000, replace = T)
+for (j in 1:1E4) {
+  # air1 <- airports[airports$iata == fsub[j,]$airport1,]
+  # air2 <- airports[airports$iata == fsub[j,]$airport2,]
+  # 
+  
+ # inter <- gcIntermediate(c(paises_centroids$lat[samp1[j]], paises_centroids$lon[samp1[j]]), c(data2plot$desLon[j], data2plot$desLat[j]), n=10, addStartEnd=TRUE)
+  inter <- gcIntermediate(c(data2plot$oriLon[j],data2plot$oriLat[j]), c(data2plot$desLon[j], data2plot$desLat[j]), n=10, addStartEnd=TRUE)
+  
+  
+  lines(inter, col='gray', lwd=0.6)
+}
+
