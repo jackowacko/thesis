@@ -55,4 +55,70 @@ lines(evalua$edad,type='l')
 #It is not a general-purpose method but can be very useful in getting to a good value on a very rough surface.
 
 
+_____________________________________________________________
+______________________________________________________________-
+
+
+
+
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+
+#CREACION DE VALORES PARA LA FUCI?N DE ROGERS Y CASTRO
+#asumiendo que las distribuciones de todos los par?metros del modelo de 11 par?metros son 
+#aprioris no iformativas
+
+
+#primera exponencial
+a1.sim <- runif(10000,0.028,0.03)
+alpha1.sim <- rexp(100000,0.091)
+
+#segunda exponencial
+a2.sim <- runif(10000,0.046,0.048)
+alpha2.sim <- rexp(10000,0.094)
+mu2.sim <- rnorm(10000,19.32,0.01)
+lambda2.sim <- rexp(10000,0.369)
+
+#tercera exponencial
+a3.sim <- runif(10000,0.03)
+alpha3.sim <- rexp(10000,0.369)
+mu3.sim <- rnorm(10000,85.01,0.01)
+lambda3.sim <- rexp(10000,0.072)
+
+#constante
+c <- runif(10000,0.001,0.003)
+
+
+#FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
+
+exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
+  x <- x1
+  exp1 <- (a1 * exp(-alpha1 * x ))
+  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
+  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
+  +c
+  return(exp1)
+}
+
+
+#evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
+
+ListaVectores <- lapply(as.list(1:85), function(x){
+  (exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim
+           ,alpha2.sim,lambda2.sim
+           ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c))
+})
+
+dataFrameVectores <- do.call('rbind',ListaVectores)
+hist(dataFrameVectores[,3],50,col='red')
+
+
+
+#evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
+lapply(as.list(30:40), function(x){
+  x11()
+  hist(exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim,alpha2.sim,lambda2.sim
+                ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c)
+                ,main=paste('Edad',x),50,col='red')
+})
+
 
