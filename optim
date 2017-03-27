@@ -67,26 +67,29 @@ estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 #asumiendo que las distribuciones de todos los par?metros del modelo de 11 par?metros son 
 #aprioris no iformativas
 
+for (j in 1:5E5){
 
-#primera exponencial
-a1.sim <- runif(10000,0.028,0.03)
-alpha1.sim <- rexp(100000,0.091)
+        #primera exponencial
+        a1.sim <- runif(1,0.028,0.03)
+        alpha1.sim <- rexp(1,0.091)
 
-#segunda exponencial
-a2.sim <- runif(10000,0.046,0.048)
-alpha2.sim <- rexp(10000,0.094)
-mu2.sim <- rnorm(10000,19.32,0.01)
-lambda2.sim <- rexp(10000,0.369)
+        #segunda exponencial
+        a2.sim <- runif(1,0.046,0.048)
+        alpha2.sim <- rexp(1,0.094)
+        mu2.sim <- rnorm(1,19.32,0.01)
+        lambda2.sim <- rexp(1,0.369)
 
-#tercera exponencial
-a3.sim <- runif(10000,0.03)
-alpha3.sim <- rexp(10000,0.369)
-mu3.sim <- rnorm(10000,85.01,0.01)
-lambda3.sim <- rexp(10000,0.072)
+        #tercera exponencial
+        a3.sim <- runif(1,0.03)
+        alpha3.sim <- rexp(1,0.369)
+        mu3.sim <- rnorm(1,85.01,0.01)
+        lambda3.sim <- rexp(1,0.072)
 
-#constante
-c <- runif(10000,0.001,0.003)
+        #constante
+        c <- runif(1,0.001,0.003)
 
+
+parameters <- c(a1.sim, alpha1.sim, a2.sim,alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim,mu3.sim,lambda3.sim)
 
 #FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
 
@@ -99,7 +102,11 @@ exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
   return(exp1)
 }
 
+function2optim <- function(x, parameters){
+(exp.test(x,parameters) - m(x)) ^2
+}
 
+}
 #evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
 
 ListaVectores <- lapply(as.list(1:85), function(x){
