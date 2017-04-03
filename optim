@@ -67,6 +67,17 @@ estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 #asumiendo que las distribuciones de todos los par?metros del modelo de 11 par?metros son 
 #aprioris no iformativas
 
+exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
+  x <- x1
+  exp1 <- (a1 * exp(-alpha1 * x ))
+  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
+  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
+  +c
+  return(exp1)
+}
+
+resultAcum <- NA
+
 for (j in 1:5E5){
 
         #primera exponencial
@@ -93,20 +104,16 @@ parameters <- c(a1.sim, alpha1.sim, a2.sim,alpha2.sim, mu2.sim, lambda2.sim, a3.
 
 #FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
 
-exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
-  x <- x1
-  exp1 <- (a1 * exp(-alpha1 * x ))
-  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
-  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
-  +c
-  return(exp1)
+
+function2optim <- function(y, x, parameters){
+sum((exp.test(x,parameters) - y(x)) ^2)
 }
 
-function2optim <- function(x, parameters){
-(exp.test(x,parameters) - m(x)) ^2
-}
+resultOptim <- optim(parameters, function2optim)
 
-}
+resultAcum <- rebind(resultAcum, c(resultOptim$hessian, parameters))
+
+}final for################################################################
 #evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
 
 ListaVectores <- lapply(as.list(1:85), function(x){
