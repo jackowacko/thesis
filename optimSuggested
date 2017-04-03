@@ -65,9 +65,16 @@ for (j in 1:5E3){
 }
 
 ######################################final for################################################################
+
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 x <- 1:89
 plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
 for(i in 2:nrow(resultAcum)){
-lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
-               ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+  lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
+                 ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+  
+  lines(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
+                 ,estocolmo[9],estocolmo[10],estocolmo[11]))
+  
 }
+
