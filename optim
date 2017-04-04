@@ -136,3 +136,55 @@ lapply(as.list(30:40), function(x){
 })
 
 
+
+##########################################################################################
+# tercer intento
+
+exp.test<-function(a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
+  
+  exp1 <- (a1 * exp(-alpha1 * x ))
+  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
+  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
+  +c
+  return(exp1)
+  
+}
+
+resultAcum <- NA
+
+for (j in 1:1000){
+  
+#primera exponencial
+a1.sim <- runif(1,0.028,0.03)
+alpha1.sim <- rexp(1,0.091)
+
+#segunda exponencial
+a2.sim <- runif(1,0.046,0.048)
+alpha2.sim <- rexp(1,0.094)
+mu2.sim <- rnorm(1,19.32,0.01)
+lambda2.sim <- rexp(1,0.369)
+
+#tercera exponencial
+a3.sim <- runif(1,0.03)
+alpha3.sim <- rexp(1,0.369)
+mu3.sim <- rnorm(1,85.01,0.01)
+lambda3.sim <- rexp(1,0.072)
+
+#constante
+c <- runif(1,0.001,0.003)
+
+parameters <- c(a1.sim, alpha1.sim, a2.sim, alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim, mu3.sim, lambda3.sim, c)
+
+
+function2optim <- function(y, x, parameters){
+  sum((exp.test(a1.sim, alpha1.sim, a2.sim, alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim, mu3.sim, lambda3.sim, c) - y) ^2)
+}
+
+resultOptim <- optim(parameters, function2optim)
+resultAcum <- rbind(resultAcum, c(resultOptim$hessian, parameters))
+
+}
+
+resultAcum <- resultAcum[-1,]
+resultAcum[,1]
+
