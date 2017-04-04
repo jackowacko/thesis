@@ -1,0 +1,80 @@
+
+exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
+  x <- x1
+  exp1 <- (a1 * exp(-alpha1 * x ))
+  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
+  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
+  +c1
+  return(exp1)
+}
+
+resultAcum <- NA
+
+#y(x) función discreta
+# valores de las proporciones de migración por edad entre 0 y 80
+# 
+# plot(1:90, seq(0,0.1, length =90 ))
+# 
+# dataIn <- locator(20)
+# plot()
+# set.seed(777)
+
+dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
+
+y <- approxfun(c(dataIn$edad), c(dataIn$proportion))
+plot(dataIn)
+
+resultAcum <- NA
+for (j in 1:5E3){
+  
+            #primera exponencial
+            a1.sim <- runif(1,0.028,0.03)
+            alpha1.sim <- rexp(1,0.091)
+            
+            #segunda exponencial
+            a2.sim <- runif(1,0.046,0.048)
+            alpha2.sim <- rexp(1,0.094)
+            mu2.sim <- rnorm(1,19.32,0.01)
+            lambda2.sim <- rexp(1,0.369)
+            
+            #tercera exponencial
+            a3.sim <- runif(1,0.03)
+            alpha3.sim <- rexp(1,0.369)
+            mu3.sim <- rnorm(1,85.01,0.01)
+            lambda3.sim <- rexp(1,0.072)
+            
+            #constante
+            c1 <- runif(1,0.001,0.003)
+            
+            
+            parameters <- c(a1.sim, alpha1.sim, a2.sim,alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim,mu3.sim,lambda3.sim,c1)
+            
+            #FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
+            
+            
+            function2optim <- function(parameters1){
+              sum((exp.test(x,parameters1[1],parameters1[2],parameters1[3],parameters1[4],parameters1[5]
+                            ,parameters1[6],parameters1[7],parameters1[8],parameters1[9],
+                            parameters1[10], parameters1[11]) - y(x)) ^2)
+            }
+            
+            resultOptim <- optim(parameters, function2optim)
+            
+            resultAcum <- rbind(resultAcum, c(resultOptim$value, parameters,resultOptim$par))
+  
+}
+
+######################################final for################################################################
+
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+x <- 1:89
+plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
+for(i in 2:nrow(resultAcum)){
+  lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
+                 ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+  
+  lines(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
+                 ,estocolmo[9],estocolmo[10],estocolmo[11]))
+  
+}
+
