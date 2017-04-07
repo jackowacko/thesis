@@ -1,14 +1,11 @@
 
-setwd("D:/UnivAutBarcelona/MCMC")
 
 exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
-  exp1 <- (a1 * exp(-alpha1 * x ))
-  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
-  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
-  +c1
+  exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
   return(exp1)
 }
+
 
 resultAcum <- NA
 
@@ -72,7 +69,7 @@ for(i in 2:nrow(resultAcum)){
   lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
                  ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
   
-  plot(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
+  lines(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
                  ,estocolmo[9],estocolmo[10],estocolmo[11]))
   
 }
