@@ -1,190 +1,79 @@
 
 setwd("D:/UnivAutBarcelona/MCMC")
-#------------------------------------------------------------------
-#Función de optimización de los parámetros por máxima verosimilitud solo 7 parámetros
-#------------------------------------------------------------------
 
-# parámetros de estocolmo a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c
-
-estocolmo<-c(0.033,0.097,0.059,20.8,0.77,0.374,0.003)
-
-exp.test<-function(data,par){
-  
-  sum(log(
-    par[1] * (exp(-par[2] *  data[1]))
-    + (par[3] * (exp((-par[5] * (data[1]-par[4])) - exp(-par[6] * (data[1] - par[4])))))
-    + par[7]))
-}
-
-result <- optim(par = estocolmo, exp.test, data = dat, method="SANN")
-result
-
-#------------------------------------------------------------------
-#Evaluacion de la función de 7 parámetros
-#------------------------------------------------------------------
-#------------------------------------------------------------------
-
-#ya que no entiendo como hacer la evaluación de los puntos, me da una función muy rara, diferente a la que empiricamente
-#y observando los datos da... no se.. creo que hay que leer otro poco. 
-#------------------------------------------------------------------
-
-evalua.fun <- function(x){
-  
-  y <- (result$par[1] * exp(-result$par[2] * x ))
-  + (result$par[3] * (exp((-result$par[5] * (x-result$par[4])) - exp(-result$par[6] * (x - result$par[4])))))
-  + result$par[7]
-  return(y)
-  
-}
-evalua <- evalua.fun(dat[1])
-plot(proportion ~ edad, data = dat,type='l', col='red')
-lines(evalua$edad,type='l')
-
-
-#Method "SANN" is by default a variant of simulated annealing given in Belisle (1992). 
-#Simulated-annealing belongs to the class of stochastic global optimization methods. 
-#It uses only function values but is relatively slow. It will also work for non-differentiable functions. 
-#This implementation uses the Metropolis function for the acceptance probability.
-#By default the next candidate point is generated from a Gaussian Markov kernel 
-#with scale proportional to the actual temperature. If a function to generate a new candidate 
-#point is given, method "SANN" can also be used to solve combinatorial optimization problems. 
-#Temperatures are decreased according to the logarithmic cooling schedule as given in Belisle (1992, p. 890);
-#specifically, the temperature is set to temp / log(((t-1) %/% tmax)*tmax + exp(1)), 
-#where t is the current iteration step and temp and tmax are specifiable via control, see below. 
-#Note that the "SANN" method depends critically on the settings of the control parameters. 
-#It is not a general-purpose method but can be very useful in getting to a good value on a very rough surface.
-
-
-_____________________________________________________________
-______________________________________________________________-
-
-
-
-
-estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
-
-#CREACION DE VALORES PARA LA FUCI?N DE ROGERS Y CASTRO
-#asumiendo que las distribuciones de todos los par?metros del modelo de 11 par?metros son 
-#aprioris no iformativas
-
-exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
+exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
   exp1 <- (a1 * exp(-alpha1 * x ))
   + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
   + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
-  +c
+  +c1
   return(exp1)
 }
 
 resultAcum <- NA
 
-for (j in 1:5E5){
+#y(x) función discreta
+# valores de las proporciones de migración por edad entre 0 y 80
+# 
+# plot(1:90, seq(0,0.1, length =90 ))
+# 
+# dataIn <- locator(20)
+# plot()
+# set.seed(777)
 
-        #primera exponencial
-        a1.sim <- runif(1,0.028,0.03)
-        alpha1.sim <- rexp(1,0.091)
+dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
 
-        #segunda exponencial
-        a2.sim <- runif(1,0.046,0.048)
-        alpha2.sim <- rexp(1,0.094)
-        mu2.sim <- rnorm(1,19.32,0.01)
-        lambda2.sim <- rexp(1,0.369)
-
-        #tercera exponencial
-        a3.sim <- runif(1,0.03)
-        alpha3.sim <- rexp(1,0.369)
-        mu3.sim <- rnorm(1,85.01,0.01)
-        lambda3.sim <- rexp(1,0.072)
-
-        #constante
-        c <- runif(1,0.001,0.003)
-
-
-parameters <- c(a1.sim, alpha1.sim, a2.sim,alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim,mu3.sim,lambda3.sim)
-
-#FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
-
-
-function2optim <- function(y, x, parameters){
-sum((exp.test(x,parameters) - y(x)) ^2)
-}
-
-resultOptim <- optim(parameters, function2optim)
-
-resultAcum <- rebind(resultAcum, c(resultOptim$hessian, parameters))
-
-}final for################################################################
-#evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
-
-ListaVectores <- lapply(as.list(1:85), function(x){
-  (exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim
-           ,alpha2.sim,lambda2.sim
-           ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c))
-})
-
-dataFrameVectores <- do.call('rbind',ListaVectores)
-hist(dataFrameVectores[,3],50,col='red')
-
-
-
-#evaluaci?n de la funci?n de rogers y castro con 10000 simulaciones de los par?metros
-lapply(as.list(30:40), function(x){
-  x11()
-  hist(exp.test(x,a1.sim,alpha1.sim,a2.sim,mu2.sim,alpha2.sim,lambda2.sim
-                ,a3.sim,mu3.sim,alpha3.sim,lambda3.sim,c)
-                ,main=paste('Edad',x),50,col='red')
-})
-
-
-
-##########################################################################################
-# tercer intento
-
-exp.test<-function(a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c){
-  
-  exp1 <- (a1 * exp(-alpha1 * x ))
-  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
-  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
-  +c
-  return(exp1)
-  
-}
+y <- approxfun(c(dataIn$edad), c(dataIn$proportion))
+plot(dataIn)
 
 resultAcum <- NA
-
-for (j in 1:1000){
+for (j in 1:100){
   
-#primera exponencial
-a1.sim <- runif(1,0.028,0.03)
-alpha1.sim <- rexp(1,0.091)
-
-#segunda exponencial
-a2.sim <- runif(1,0.046,0.048)
-alpha2.sim <- rexp(1,0.094)
-mu2.sim <- rnorm(1,19.32,0.01)
-lambda2.sim <- rexp(1,0.369)
-
-#tercera exponencial
-a3.sim <- runif(1,0.03)
-alpha3.sim <- rexp(1,0.369)
-mu3.sim <- rnorm(1,85.01,0.01)
-lambda3.sim <- rexp(1,0.072)
-
-#constante
-c <- runif(1,0.001,0.003)
-
-parameters <- c(a1.sim, alpha1.sim, a2.sim, alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim, mu3.sim, lambda3.sim, c)
-
-
-function2optim <- function(y, x, parameters){
-  sum((exp.test(a1.sim, alpha1.sim, a2.sim, alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim, mu3.sim, lambda3.sim, c) - y) ^2)
+  #primera exponencial
+  a1 <- runif(1,0.028,0.03)
+  alpha1 <- rexp(1,0.091)
+  
+  #segunda exponencial
+  a2 <- runif(1,0.046,0.048)
+  alpha2 <- rexp(1,0.094)
+  mu2 <- rnorm(1,19.32,0.01)
+  lambda2 <- rexp(1,0.369)
+  
+  #tercera exponencial
+  a3 <- runif(1,0.03)
+  alpha3 <- rexp(1,0.369)
+  mu3 <- rnorm(1,85.01,0.01)
+  lambda3 <- rexp(1,0.072)
+  
+  #constante
+  c1 <- runif(1,0.001,0.003)
+  
+  
+  parameters <- c(a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1)
+  
+  #FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
+  
+  
+  function2optim <- function(parameters1){
+    sum((exp.test(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1) - y(x)) ^2)
+  }
+  
+  resultOptim <- optim(parameters, function2optim)
+  
+  resultAcum <- rbind(resultAcum, c(resultOptim$value, parameters,resultOptim$par))
+  
 }
 
-resultOptim <- optim(parameters, function2optim)
-resultAcum <- rbind(resultAcum, c(resultOptim$hessian, parameters))
 
+estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
+x <- 1:89
+plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
+for(i in 2:nrow(resultAcum)){
+  lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
+                 ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+  
+  plot(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
+                 ,estocolmo[9],estocolmo[10],estocolmo[11]))
+  
 }
-
-resultAcum <- resultAcum[-1,]
-resultAcum[,1]
 
