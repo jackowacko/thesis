@@ -1,5 +1,9 @@
 
 
+
+
+
+
 exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
   exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
@@ -19,9 +23,11 @@ resultAcum <- NA
 # set.seed(777)
 
 dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
-dataIn$std.prop <- dataIn$proportion/sum(dataIn$proportion)
-y <- approxfun(c(dataIn$edad), c(dataIn$std.prop))
+#dataIn$std.prop <- dataIn$proportion/sum(dataIn$proportion)
+y <- approxfun(c(dataIn$edad), c(dataIn$proportion))
 plot(dataIn$std.prop)
+
+x <- dataIn$edad
 
 resultAcum <- NA
 for (j in 1:100000){
@@ -60,7 +66,9 @@ for (j in 1:100000){
     sum((1/y(x))*(exp.test(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1) - y(x)) ^2)
   }
   
-  resultOptim <- optim(parameters, function2optim)
+  #resultOptim <- optim(parameters, function2optim)
+  
+  resultOptim <- optim(parameters, function2optim, method='L-BFGS-B', lower = c(0.28, 0.08, 0.046, 0.6, 15, 0.2, 0.00001, 0.00001, 0.00001, 0.00001, 0.001), upper = c(0.03, 0.1, 0.048, 0.8, 25, 0.4, 0.000011, 0.000011, 0.000011, 0.000011, 0.003))
   
   resultAcum <- rbind(resultAcum, c(resultOptim$value, parameters,resultOptim$par))
   
@@ -88,6 +96,5 @@ plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
 best
 mean(resultAcum[,5], na.rm = T)
 sd(resultAcum[,5], na.rm = T)
-
 
 
