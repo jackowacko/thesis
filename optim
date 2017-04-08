@@ -1,5 +1,8 @@
 
 
+setwd()
+
+
 exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
   exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
@@ -19,28 +22,33 @@ resultAcum <- NA
 # set.seed(777)
 
 dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
-
-y <- approxfun(c(dataIn$edad), c(dataIn$proportion))
-plot(dataIn)
+dataIn$std.prop <- dataIn$proportion/sum(dataIn$proportion)
+y <- approxfun(c(dataIn$edad), c(dataIn$std.prop))
+plot(dataIn$std.prop)
 
 resultAcum <- NA
-for (j in 1:100){
-  
+for (j in 1:100000){
+
   #primera exponencial
-  a1 <- runif(1,0.028,0.03)
-  alpha1 <- rexp(1,0.091)
+  a1 <- runif(1, 0.028, 0.03)
+  alpha1 <- runif(1, 0.08, 0.1)
   
   #segunda exponencial
-  a2 <- runif(1,0.046,0.048)
-  alpha2 <- rexp(1,0.094)
-  mu2 <- rnorm(1,19.32,0.01)
-  lambda2 <- rexp(1,0.369)
+  a2 <- runif(1, 0.046, 0.048)
+  alpha2 <- runif(1, 0.6, 0.8)
+  mu2 <- runif(1, 15, 25)
+  lambda2 <- runif(1, 0.2, 0.4)
   
   #tercera exponencial
-  a3 <- runif(1,0.03)
-  alpha3 <- rexp(1,0.369)
-  mu3 <- rnorm(1,85.01,0.01)
-  lambda3 <- rexp(1,0.072)
+  a3 <- runif(1, 0.03)
+  alpha3 <- runif(1, 0.5, 0.9)
+  mu3 <- runif(1, 80, 90)
+  lambda3 <- runif(1, 0.1, 0.2)
+  
+  a3 <- 0
+  alpha3 <- 0
+  mu3 <- 0
+  lambda3 <- 0
   
   #constante
   c1 <- runif(1,0.001,0.003)
@@ -52,7 +60,7 @@ for (j in 1:100){
   
   
   function2optim <- function(parameters1){
-    sum((exp.test(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1) - y(x)) ^2)
+    sum((1/y(x))*(exp.test(x,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1) - y(x)) ^2)
   }
   
   resultOptim <- optim(parameters, function2optim)
@@ -64,13 +72,25 @@ for (j in 1:100){
 
 estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
 x <- 1:89
+#x11()
 plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
-for(i in 2:nrow(resultAcum)){
-  lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
-                 ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+#for(i in 2:nrow(resultAcum)){
+  #lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
+   #              ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
   
   lines(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
-                 ,estocolmo[9],estocolmo[10],estocolmo[11]))
+                 ,estocolmo[9],estocolmo[10],estocolmo[11]), col='blue')
   
-}
+  best <- resultAcum[which.min(resultAcum[,1]),]
+  lines(exp.test(0:90, best[2], best[3], best[4], best[5], best[6],
+                 best[7], best[8], best[9], best[10], best[11], best[12]), col='black')
+  
+  
+#}
+
+best
+mean(resultAcum[,5], na.rm = T)
+sd(resultAcum[,5], na.rm = T)
+
+
 
