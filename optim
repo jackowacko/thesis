@@ -98,3 +98,76 @@ mean(resultAcum[,5], na.rm = T)
 sd(resultAcum[,5], na.rm = T)
 
 
+
+################################################################
+library(minpack.lm)
+
+
+#función objetivo
+
+fr<-function(x){
+  exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
+  return(exp1)
+}
+
+resultAcum <- NA
+
+  
+#primera exponencial
+a1 <- runif(1, 0.028, 0.03)
+alpha1 <- runif(1, 0.08, 0.1)
+
+#segunda exponencial
+a2 <- runif(1, 0.046, 0.048)
+alpha2 <- runif(1, 0.6, 0.8)
+mu2 <- runif(1, 15, 25)
+lambda2 <- runif(1, 0.2, 0.4)
+
+#tercera exponencial
+a3 <- runif(1, 0.03)
+alpha3 <- runif(1, 0.5, 0.9)
+mu3 <- runif(1, 80, 90)
+lambda3 <- runif(1, 0.1, 0.2)
+
+a3 <- 0
+alpha3 <- 0
+mu3 <- 0
+lambda3 <- 0
+
+#constante
+c1 <- runif(1,0.001,0.003)
+
+resultOptim <- nls.lm(c(a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1), lower = c(0.28, 0.08, 0.046, 0.6, 15, 0.2, 0.00001, 0.00001, 0.00001, 0.00001, 0.001), upper = c(0.03, 0.1, 0.048, 0.8, 25, 0.4, 0.000011, 0.000011, 0.000011, 0.000011, 0.003), fr)
+resultOptim$par
+
+exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
+  x <- x1
+  exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
+  return(exp1)
+}
+
+
+#primera exponencial
+a1 <- resultOptim$par[1]
+alpha1 <- resultOptim$par[2]
+
+#segunda exponencial
+a2 <- resultOptim$par[3]
+alpha2 <- resultOptim$par[4]
+mu2 <- resultOptim$par[5]
+lambda2 <- resultOptim$par[6]
+
+#tercera exponencial
+a3 <- resultOptim$par[7]
+alpha3 <- resultOptim$par[8]
+mu3 <- resultOptim$par[9]
+lambda3 <- resultOptim$par[10]
+
+#constante
+c1 <- resultOptim$par[11]
+
+plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
+lines(exp.test(0:90, a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1))
+
+
+
