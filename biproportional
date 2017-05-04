@@ -1,3 +1,8 @@
+
+net.file <- fread("DO_total_2015.csv", header=TRUE, sep = ';', data.table = F)
+rownames(net.file) <- net.file$area
+net.file <- net.file[,-c(1,2)]
+
 ### función para ajuste biproporcional
 
 k <- 0
