@@ -1,0 +1,111 @@
+---
+title: "Datos no estructurados"
+author: "Jackson Garcés"
+date: "14 de julio de 2016"
+output:
+  beamer_presentation: default
+  ioslides_presentation:
+    widescreen: yes
+---
+## Datos no estructurados
+
+<img src="unstructured-data-cloud_2.jpg" width="725" height="480" />
+
+## ¿Què son datos no estructurados?
+
+Son los datos que no se enmarcan dentro de un modelo de datos predefinido (como las tablas). Usualmente los datos no estructurados son compuestos por texto pesado. Sin embargo, existen otros tipos de datos no estructurados como:
+
+- Imàgenes satelitales
+- Archivos de audio
+- Archivos de video
+- Señales IoT
+- Redes sociales
+- Datos móviles 
+- Páginas WEB
+- ...
+
+```{r}
+plot(rnorm(10))
+```
+
+
+
+
+## ¿Por qué son importantes los datos no estructurados?
+
+Los datos no estructurados son de lejos los de mayor peso en la ecuación de la analítica y la información. Se dice que un 80% de la información producida es no estructurada y  a su vez suele ser la que más se relaciona con las personas, de ahí su valor. Sin embargo, la brecha analítica y de almacenamiento es grande aunque se ha ido estrechando con las nuevas tecnologías.
+
+## Datos no estructurados y Big Data
+
+El Big Data es la sumatoria de fuentes de datos estructuradas, no estructuradas e hiperestructuradas y las técnicas para almacenamiento y análisis de este entorno de datos. Es el Big Data el encargado de reducir la brecha en la capacidad de almacenamiento y análisis de datos no estructurados. El objetivo es transformar datos no estructurados a datos estructurados.
+
+El ecosistema Hadoop es tal vez el entorno màs conocido, o del que màs se habla,  pero no es la ùnica herramienta que permite almacenar, analizar o procesar Big Data. 
+
+## Herramientas para datos no estructurados
+### **Almacenamiento**
+
+En general las herramientas para "tratar y almacenar" datos no estructurados son conocidas como herramientas NoSQL, las diferencias entre los diferentes desarrollos se basa en tres requeriemientos fundamentales. Es conocido como el teorema CAP (por sus siglas en inglés).
+
+- Consistencia. Cada cliente siempre tiene la misma vista de datos.
+- Disponibilidad. Todos los clientes siempre pueden leer y escribir datos.
+- Tolerancia a la partición. El sistema debe trabajar bien a través de redes físicas.
+
+
+## Herramientas para datos no estructurados
+### **Almacenamiento**
+
+Por ejemplo en los (RDBMS) son del tipo **CA**, es decir consistentes y con disponibilidad tienen problemas de replicación (paralelismo). En otra "arista" estan las tipo **CP** tienen problemas de disponibilidad pero son consistentes a través de sistemas distribuidos aquí están heramientas como HBase, MongoDB, Terrastore, Redis entre otras. Por último se tiene as tipo **AP** con alta disponibilidad y tolerables a un entorno de partición como Cassandra, SimpleDB, Dynamo entre otras
+
+## Herramientas para datos no estructurados
+### **Analítica**
+
+Cuando los datos han sido capturados surge la incógnita de ¿cómo los analizo?, ¿cómo les agrego valor?, ¿cómo los visualizo?
+
+La solución se puede ver desde dos puntos de vista complementarios la teoría y las herramientas.
+
+Las teorías tienen que ver con los desarrollos que se han hecho desde la academía y las herramientas son los programas y software donde han sido implementados para uso final. Entre otros elementos de teória se tienen: 
+
+## Herramientas para datos no estructurados
+### **Analítica**
+
+- Minería de texto (text minning)
+- Procesamiento de lenguje natural (NPL)
+- Procesamiento de imágenes
+- Geomática
+- Análisis de redes
+- ***web scraping tasks***
+- Análisis de sentimientos 
+
+
+## Herramientas para datos no estructurados
+### **Analítica**
+ 
+ Existen mùltiples herramientas de software que implementan las tècnicas para anàlisis de datos no estructurados, la màs robustas son:
+ 
+ - R open source. Multiples paquetes desarrollados por la comunidad y empresas, considerado el sistema nùmero 1 en la ciencia de datos.
+ - Matlab. Herramienta de modelamiento matemàtico y de señales
+ - SAS. Otro software de primer nivel enfocado en el anàlisis y modelamiento estadìstico
+ - Knime. Herrramienta de minerìa de datos con algunos algoritmos de text minnig implementado
+ 
+## Casos de uso de información no estructurada
+
+- Compañías como Delta Airlines utililiza el análisis de sentimientos para establecer como se sienten sus clientes respecto a las demoras, la comida, el tratamiento del personal. Los tuits positivos ayudan a determinar comportamientos exitosos.
+
+- Thomson Reuters, en su línea financiera, dota a los analistas de una ventaja al proporcionarles seguimiento de las redes de las compañías y personas. Con esto buscan detectar cambios en los comportamientos y como estos puedan llegar incluso a impactar el mercado.
+
+-
+ 
+
+## ¿ Por què Tibco Spotfire es la mejor elecciòn para manejar sus datos no estructurados?
+
+- Spotfire permite conectarse a mùltiples fuentes de datos, entre ellas la gran mayorìa de plataformas NoSQL.
+- Spotfire integra la capacidad anàlitica de R, Matlab y/o SAS con la potencia de visualizaciòn de Tibco.
+- Con Spotfire se pueden obtener nuevas reglas de negocio a partir de informaciòn no estructurada.
+- Spotfire tiene desarrollo nativo para conexiones y anàlitica en ecosistemas BigData.
+- Spotfire es escalable.
+
+## Demostraciòn algunos casos de uso
+
+- Análisis de audio (Servicio al cliente)
+- TextMinning
+- Wrapping Web
