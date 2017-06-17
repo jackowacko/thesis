@@ -1,0 +1,63 @@
+td2<-function(data, pop, year, sex.){
+
+countries <- unique(totalpop$area)
+
+#### reducción de matrices a los nombres que hay en las de población
+reduct <- function(tabla){
+  #tabla <- tabla[,1:dim(tabla)[2]]
+  #colnames(tabla) <- rownames(tabla)
+  rownames(tabla) <- tabla$area
+  tabla1 <- tabla[rownames(tabla) %in% countries, ]
+  tabla2 <- tabla1[,colnames(tabla1) %in% countries]
+  tabla2
+}
+
+new.data <- reduct(data)
+new.data <- new.data[order(rownames(new.data)),] 
+new.vec <- data.frame(rownames(new.data),rowSums(new.data))
+new.vec <- rowSums(new.data)
+
+#### llenado de la diagonal
+for(i in 1:dim(new.data)[2]){
+  new.data[i,i] = pop[i] - new.vec[i]
+}
+
+new.data <- t(new.data)
+t.data <- melt(new.data)
+#t.data<- subset(t.data, (value > 0) & (is.na=T))
+
+colnames(t.data)<-c('origen','destino','N')
+
+anno <- as.vector(rep(year, dim(t.data)[1]))
+sexo <- as.vector(rep(sex., dim(t.data)[1]))
+
+tab <- cbind(anno,sexo,t.data)
+#View(tab)
+
+}
+
+#### creación de tabla por tabla y posterior ensamblaje en una sola para impresión
+
+t90 <- td2(tabla90, p1990, 1990, 'Total')
+t90m <- td2(tabla90m, p1990m, 1990, 'Hombre')
+t90f <- td2(tabla90f, p1990f, 1990, 'Mujer')
+t95 <- td2(tabla95, p1995, 1995, 'Total')
+t95m <- td2(tabla95m, p1995m, 1995, 'Hombre')
+t95f <- td2(tabla95f, p1995f, 1995, 'Mujer')
+t00 <- td2(tabla00, p2000, 2000, 'total')
+t00m <- td2(tabla00m, p2000m, 2000, 'Hombre')
+t00f <- td2(tabla00f, p2000f, 2000, 'Mujer')
+t05 <- td2(tabla05, p2005, 2005, 'total')
+t05m <- td2(tabla05m, p2005m, 2005, 'Hombre')
+t05f <- td2(tabla05f, p2005f, 2005, 'Mujer')
+t10 <- td2(tabla10, p2010, 2010, 'total')
+t10m <- td2(tabla10m, p2010m, 2010, 'Hombre')
+t10f <- td2(tabla10f, p2010f, 2010, 'Mujer')
+t15 <- td2(tabla15, p2015, 2015, 'total')
+t15m <- td2(tabla15m, p2015m, 2015, 'Hombre')
+t15f <- td2(tabla15f, p2015f, 2015, 'Mujer')
+
+a<-(rbind(t15m, t15f, t10m, t10f, t05m, t05f, t00m, t00f, t95m, t95f, t90m, t90f))
+write.csv(a, file='tabla_din_J_2".csv')
+
+
