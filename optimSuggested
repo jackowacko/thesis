@@ -1,4 +1,4 @@
-
+dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
 exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
   exp1 <- (a1 * exp(-alpha1 * x ))
