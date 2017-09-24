@@ -1,80 +1,123 @@
+
 dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
-exp.test<-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
+
+require(nloptr)
+
+exp.test <-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
-  exp1 <- (a1 * exp(-alpha1 * x ))
-  + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2))))
-  + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3))))
-  +c1
+  exp1 <- (a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1
+  
   return(exp1)
 }
-
-resultAcum <- NA
-
-#y(x) función discreta
-# valores de las proporciones de migración por edad entre 0 y 80
+############################################
+#
 # 
-# plot(1:90, seq(0,0.1, length =90 ))
-# 
-# dataIn <- locator(20)
-# plot()
-# set.seed(777)
+################################################################## 
+rc.11 <- expression(log((a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1))
 
-dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
+sapply(all.vars(rc.11), function(v){
+  D(rc.11, v)
+})
 
-y <- approxfun(c(dataIn$edad), c(dataIn$proportion))
-plot(dataIn)
 
-resultAcum <- NA
-for (j in 1:5E3){
+genRandomPar <- function()  {      
   
-            #primera exponencial
-            a1.sim <- runif(1,0.028,0.03)
-            alpha1.sim <- rexp(1,0.091)
-            
-            #segunda exponencial
-            a2.sim <- runif(1,0.046,0.048)
-            alpha2.sim <- rexp(1,0.094)
-            mu2.sim <- rnorm(1,19.32,0.01)
-            lambda2.sim <- rexp(1,0.369)
-            
-            #tercera exponencial
-            a3.sim <- runif(1,0.03)
-            alpha3.sim <- rexp(1,0.369)
-            mu3.sim <- rnorm(1,85.01,0.01)
-            lambda3.sim <- rexp(1,0.072)
-            
-            #constante
-            c1 <- runif(1,0.001,0.003)
-            
-            
-            parameters <- c(a1.sim, alpha1.sim, a2.sim,alpha2.sim, mu2.sim, lambda2.sim, a3.sim, alpha3.sim,mu3.sim,lambda3.sim,c1)
-            
-            #FUNCI?N DE 11 PAR?METROS DE ROGERS Y CASTRO
-            
-            
-            function2optim <- function(parameters1){
-              sum((exp.test(x,parameters1[1],parameters1[2],parameters1[3],parameters1[4],parameters1[5]
-                            ,parameters1[6],parameters1[7],parameters1[8],parameters1[9],
-                            parameters1[10], parameters1[11]) - y(x)) ^2)
-            }
-            
-            resultOptim <- optim(parameters, function2optim)
-            
-            resultAcum <- rbind(resultAcum, c(resultOptim$value, parameters,resultOptim$par))
+  #primera exponencial
+  a1 <- runif(1,0.01,0.08)
+  alpha1 <- runif(1,0,1)
   
+  #segunda exponencial
+  a2 <- runif(1,0.01 ,0.08)
+  alpha2 <- runif(1,0,1)
+  mu2 <- runif(1,15,30)
+  lambda2 <- runif(1,0,1)
+  
+  #tercera exponencial
+  a3 <- runif(1,0,1)
+  alpha3 <- runif(1,0,1)
+  mu3 <- runif(1,75,85)
+  lambda3 <- runif(1,0,1)
+  
+  #constante
+  c1 <- runif(1,0.01,0.05)
+  parameters_0 <- c(a1=a1,alpha1=alpha1,a2=a2,mu2=mu2,alpha2=alpha2,lambda2=lambda2,a3=a3,mu3=mu3,alpha3=alpha3
+                    ,lambda3=lambda3,c1=c1)
+  
+  return(parameters_0)
 }
 
-######################################final for################################################################
+x <- 1:100
+J <-  t(sapply(names(parameters_0), function(v, env){
+  eval(D(rc.11, v), env)
+}, env=c(as.list(parameters_0), list(x=x))))
 
-estocolmo<-c(0.033,0.097,0.059,20.80,0.77,0.374,0.000,76.55,0.776,0.145,0.003)
-x <- 1:89
-plot(0:90,y(0:90), type = 'l',col='red', lwd=3)
-for(i in 2:nrow(resultAcum)){
-  lines(exp.test(0:90, resultAcum[i,13],resultAcum[i,14],resultAcum[i,15],resultAcum[i,16]
-                 ,resultAcum[i,17],resultAcum[i,18],resultAcum[i,19],resultAcum[i,20],resultAcum[i,21],resultAcum[i,22],resultAcum[i,23]))
+# and then a gradient vector
+r <- runif(length(x))
+gr <-  -J %*% r
+
+# and then an approximate Hessian matrix
+H <-  J %*% t(J)
+
+nlminb(parameters_0 , function(p, data){
+  r = data$proportion - eval(rc.11)
+  return(r %*% r)
+}, gradient = gr, hessian = H, data=dataIn)
+
+
+
+ModelObject <- setRefClass('ModelObject', 
+                           fields = list(
+                             name = 'character',
+                             expr = 'expression'
+                           ),
+                           methods = list(
+                             value = function(p, data){
+                               eval(.self$expr, c(as.list(p), as.list(data)))
+                             },
+                             jacobian = function(p, data){
+                               J = t(sapply(all.vars(.self$expr), function(v, p, data){
+                                 # if(v != "c1"){
+                                 eval(D(.self$expr, v), c(as.list(p), as.list(data)))
+                                 # } else { rep(1, nrow(data))}
+                               }, p=p, data=data))
+                               
+                               return(J[names(p),,drop=F])
+                             },
+                             gradient = function(p, data){
+                               r = data$y - value(p, data)
+                               return(-jacobian(p, data) %*% r)
+                             },
+                             hessian = function(p, data){
+                               J = jacobian(p, data)
+                               return(J %*% t(J))
+                             }
+                           )
+)
+
+
+parameters_0 <- genRandomPar()
+mo = ModelObject(
+  name = 'castro_11', 
+  expr = rc.11
+)
+
+valSim <- NA
+plot(dataIn, cex=0.2)
+for(i in 1:5000){
+  parameters_0 <-  genRandomPar()
+  graProof <- mo$gradient(p= parameters_0, data = dataIn)
+  while((any(is.na(graProof)) & any(is.nan(graProof)))){
+    parameters_0 <-  genRandomPar()
+    graProof <- mo$gradient(p= parameters_0, data = dataIn)
+  }
   
-  lines(exp.test(0:90, estocolmo[1],estocolmo[2],estocolmo[3],estocolmo[4],estocolmo[5],estocolmo[6],estocolmo[7],estocolmo[8]
-                 ,estocolmo[9],estocolmo[10],estocolmo[11]))
+  fit1 <-  nlminb(parameters_0 , function(p, data){
+    r = data$y - mo$value(p,data)
+    return(r %*% r)
+  }, gradient = mo$gradient, hessian = mo$hessian, data=dataIn)
   
+  lines(dataIn$x, mo$value(fit1$par,dataIn), col="blue")
+  valSim <- rbind(valSim,c(parameters_0, fit1$par, fit1$objective, fit1$message))
 }
+
 
