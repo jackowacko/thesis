@@ -1,3 +1,5 @@
+dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
+colnames(dataIn) <-c("x","y")
 
 
 
