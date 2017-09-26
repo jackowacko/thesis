@@ -1,8 +1,13 @@
-
 dataIn <- read.table("https://raw.githubusercontent.com/elflacosebas/thesis/master/mexico.txt",header = T)
 colnames(dataIn) <-c("x","y")
 
+
 require(nloptr)
+
+#dataIn$std.prop <- dataIn$proportion/sum(dataIn$proportion)
+y <- approxfun(c(dataIn$x), c(dataIn$y))
+plot(dataIn$y)
+
 
 exp.test <-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1){
   x <- x1
@@ -10,9 +15,7 @@ exp.test <-function(x1,a1,alpha1,a2,mu2,alpha2,lambda2,a3,mu3,alpha3,lambda3,c1)
   
   return(exp1)
 }
-############################################
-#
-# 
+
 ################################################################## 
 rc.11 <- expression(log((a1 * exp(-alpha1 * x)) + (a2 * exp(-alpha2 * (x-mu2) - exp(-lambda2 * (x - mu2)))) + (a3 * exp(-alpha3 * (x-mu3) - exp(-lambda3 * (x - mu3)))) + c1))
 
@@ -20,24 +23,25 @@ sapply(all.vars(rc.11), function(v){
   D(rc.11, v)
 })
 
+####################### Generación de parámetros aleatorios. 
 
 genRandomPar <- function()  {      
   
   #primera exponencial
-  a1 <- runif(1,0.01,0.08)
-  alpha1 <- runif(1,0,1)
+  a1 <- runif(1, 0, 1.00)
+  alpha1 <- runif(1, 0, 1.00)
   
   #segunda exponencial
-  a2 <- runif(1,0.01 ,0.08)
-  alpha2 <- runif(1,0,1)
-  mu2 <- runif(1,15,30)
-  lambda2 <- runif(1,0,1)
+  a2 <- runif(1, 0.05, 0.10)
+  alpha2 <- runif(1, 0.10, 0.20)
+  mu2 <- runif(1, 15, 25)
+  lambda2 <- runif(1, 0.25, 0.60)
   
   #tercera exponencial
-  a3 <- runif(1,0,1)
-  alpha3 <- runif(1,0,1)
-  mu3 <- runif(1,75,85)
-  lambda3 <- runif(1,0,1)
+  a3 <- runif(1, 0, 1.00)
+  alpha3 <- runif(1, 0, 1.00)
+  mu3 <- runif(1, 80, 90)
+  lambda3 <- runif(1, 0, 1.00)
   
   #constante
   c1 <- runif(1,0.01,0.05)
@@ -47,24 +51,7 @@ genRandomPar <- function()  {
   return(parameters_0)
 }
 
-x <- 1:100
-J <-  t(sapply(names(parameters_0), function(v, env){
-  eval(D(rc.11, v), env)
-}, env=c(as.list(parameters_0), list(x=x))))
-
-# and then a gradient vector
-r <- runif(length(x))
-gr <-  -J %*% r
-
-# and then an approximate Hessian matrix
-H <-  J %*% t(J)
-
-nlminb(parameters_0 , function(p, data){
-  r = data$proportion - eval(rc.11)
-  return(r %*% r)
-}, gradient = gr, hessian = H, data=dataIn)
-
-
+###########################################################################
 
 ModelObject <- setRefClass('ModelObject', 
                            fields = list(
@@ -97,14 +84,23 @@ ModelObject <- setRefClass('ModelObject',
 
 
 parameters_0 <- genRandomPar()
+
 mo = ModelObject(
   name = 'castro_11', 
   expr = rc.11
 )
 
+
+###########################################################################
+
+ini <- Sys.time()
+
+si_mula <- function(ite){
+
 valSim <- NA
+colnames(dataIn) <- c("x","y")
 plot(dataIn, cex=0.2)
-for(i in 1:5000){
+for(i in 1:ite){
   parameters_0 <-  genRandomPar()
   graProof <- mo$gradient(p= parameters_0, data = dataIn)
   while((any(is.na(graProof)) & any(is.nan(graProof)))){
@@ -120,5 +116,69 @@ for(i in 1:5000){
   lines(dataIn$x, mo$value(fit1$par,dataIn), col="blue")
   valSim <- rbind(valSim,c(parameters_0, fit1$par, fit1$objective, fit1$message))
 }
+
+dataSimul <- data.frame(apply(valSim[,-ncol(valSim)],c(1,2),as.numeric),valSim[,ncol(valSim)])
+dataSimul <- dataSimul[-1,]
+colnames(dataSimul) <- c(paste(colnames(valSim)[1:11],'_0',sep =''), paste(colnames(valSim)[12:22],'_hat',sep =''),'optimResult',"mesage" )
+bestPar <- dataSimul[which.min(dataSimul$optimResult),12:22]
+names(bestPar) <- names(parameters_0)
+return(bestPar, time)
+
+}
+
+
+cien <- si_mula(100)
+mil <- si_mula(1000)
+cinco.mil <- si_mula(5000)
+diez.mil <- si_mula(10000)
+cien.mil <- si_mula(100000)
+millón <- si_mula(1000000)
+
+x11()
+plot(dataIn)
+lines(dataIn$x, mo$value(bestPar ,dataIn), col="red")
+
+fin <- Sys.time()
+
+time = fin-ini
+time
+
+
+
+
+############################### escogencia de los parámetros iniciales. 
+
+require(rpart)
+require(rpart.plot)
+
+model <- optimResult ~ a1_0 +  alpha1_0  +  a2_0 + mu2_0 + alpha2_0 + lambda2_0 + a3_0 + mu3_0 + alpha3_0 + lambda3_0 +  c1_0
+
+#model <- optimResult ~ .
+
+x11()
+rpart.plot(rpart(model, data=dataSimul), cex=0.8)
+
+fitSimul <- lm(model, data = dataSimul)
+summary(fitSimul)
+
+
+arbol <- rpart(model, data=dataSimul)
+printcp(arbol)
+plotcp(arbol)
+
+parbolrpart <- prune(arbol, cp = arbol$cptable[which.min(arbol[,'xerror']), 'cp'])
+printcp(arbol)
+plotcp(arbol)
+
+
+
+testpred <- predict(arbol, data = dataSimul, type = 'class')
+
+
+#################
+
+
+
+
 
 
