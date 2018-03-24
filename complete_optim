@@ -69,7 +69,7 @@ ini <- Sys.time()
 for (i in 1:100) {
   
   param_0 <- genRandomPar(11, mu2 = c(15, 45), mu3 = c(70, 90))
-  estimat <- mejor_modelo(dataIn = data1, model.rc =model1, iter=100)
+  estimat <- try(mejor_modelo(dataIn = data1, model.rc =model1, iter=100))
   matbest1 <- rbind(matbest1,estimat$bestParam)
   
 }
