@@ -1,0 +1,122 @@
+
+
+#install.packages("git2r", "dplyr")
+
+library(dplyr)
+library(migraR)
+
+#devtools::install_git("https://github.com/jackowacko/migraR")
+
+### ejemplo del paquete
+
+data("es_asmr")
+data1 <- es_asmr[-c(1,2,3,4,5),c(1,3)]
+colnames(data1) <- c("x","y")
+attach(data1)
+model1 = MigraModel(
+  name = 'castro_11',
+  expr = rc_expression(profile = 11)$model.exp
+)
+
+#fitted.val <- best_migramod(dataIn = data1, model.rc =model1, iter=20)
+#plot(data1, cex=0.1, xlab = 'Age', ylab = 'Standarized Migration Rate')
+#lines(data1$x, model1$value(fitted.val$bestParam,data1), col="blue")
+
+
+
+######### nueva función de estimación partiendo de fit migramod
+
+mejor_modelo  <- function(dataIn = dataIn, model.rc, iter = 100) 
+{
+  
+  colnames(dataIn) <- c("x", "y")
+  x <- dataIn[, 1]
+  y <- dataIn[, 2]
+  valSim <- fit_migramod(dataIn = dataIn, parameters_0 = param_0, 
+                         model.rc = model.rc)$values
+  values.names <- names(valSim)
+  for (i in 1:iter) {
+    param_0 <- genRandomPar(11)
+    valSim <- rbind(valSim, fit_migramod(dataIn = dataIn, 
+                                         parameters_0 = param_0, model.rc)$values)
+  }
+  rownames(valSim) <- 1:nrow(valSim)
+  colnames(valSim) <- c(paste(values.names[1:11], "_0", sep = ""), 
+                        paste(values.names[12:22], "_hat", sep = ""), "optimResult", 
+                        "message", "MAPE")
+  valSim <- as.data.frame(valSim)
+  dataSimul <- valSim %>% mutate(message = as.character(message)) %>% 
+    mutate_if(is.factor, .funs = function(x) as.numeric(as.character(x)))
+  bestPar <- dataSimul[which.min(dataSimul$optimResult), 12:22]
+  bestPar.mape <- dataSimul[which.min(dataSimul$MAPE), 12:22]
+  names(bestPar) <- names(param_0)
+  names(bestPar.mape) <- names(param_0)
+  bestPar <- sapply(bestPar, as.list)
+  names(bestPar) <- names(param_0)
+  return(list(bestParam = bestPar, dataSimul = dataSimul))
+}
+
+
+con = 0
+matbest1 = 0
+matbest2 = 0
+matbestlist <- list(0)
+
+#while(valtol > 1){
+
+ini <- Sys.time()
+
+for (i in 1:100) {
+  
+  param_0 <- genRandomPar(11, mu2 = c(15, 45), mu3 = c(70, 90))
+  estimat <- mejor_modelo(dataIn = data1, model.rc =model1, iter=100)
+  matbest1 <- rbind(matbest1,estimat$bestParam)
+  
+}
+
+fin <- Sys.time()
+fin-ini
+
+matbest <- matbest1[-1,]
+matbest2 = 0
+mat.ls <- list(0)
+
+
+ini <- Sys.time()
+
+for(j in 1:1000){
+
+for (i in 1:1000) {
+  
+  param_0 <- genRandomPar(11, a1 = c(quantile(as.numeric(matbest[,1]), probs = c(0.005)), quantile(as.numeric(matbest[,1]), probs = c(0.995))), 
+                          alpha1 = c(quantile(as.numeric(matbest[,2]), probs = c(0.005)), quantile(as.numeric(matbest[,2]), probs = c(0.995))), 
+                          a2 = c(quantile(as.numeric(matbest[,3]), probs = c(0.005)), quantile(as.numeric(matbest[,3]), probs = c(0.995))), 
+                          mu2 = c(quantile(as.numeric(matbest[,4]), probs = c(0.005)), quantile(as.numeric(matbest[,4]), probs = c(0.995))), 
+                          alpha2 = c(quantile(as.numeric(matbest[,5]), probs = c(0.005)), quantile(as.numeric(matbest[,5]), probs = c(0.995))), 
+                          lambda2 = c(quantile(as.numeric(matbest[,6]), probs = c(0.005)), quantile(as.numeric(matbest[,6]), probs = c(0.995))), 
+                          a3 = c(quantile(as.numeric(matbest[,7]), probs = c(0.005)), quantile(as.numeric(matbest[,7]), probs = c(0.995))), 
+                          mu3 = c(quantile(as.numeric(matbest[,8]), probs = c(0.005)), quantile(as.numeric(matbest[,8]), probs = c(0.995))), 
+                          alpha3 = c(quantile(as.numeric(matbest[,9]), probs = c(0.005)), quantile(as.numeric(matbest[,9]), probs = c(0.995))), 
+                          lambda3 = c(quantile(as.numeric(matbest[,10]), probs = c(0.005)), quantile(as.numeric(matbest[,10]), probs = c(0.995))), 
+                          c1= c(quantile(as.numeric(matbest[,11]), probs = c(0.005)), quantile(as.numeric(matbest[,11]), probs = c(0.995))))
+  
+
+  estimat2 <- mejor_modelo(dataIn = data1, model.rc =model1, iter=100)
+  matbest2 <- rbind(matbest2,estimat2$bestParam)
+}  
+  
+  matbest2 <- matbest2[-1,]
+  matbestlist[[j]] <- matbest2
+  matbest <- matbestlist[[j]]
+
+}
+
+a1max <- rep(0,length(matbestlist))
+for(i in 1:length(matbestlist)){
+a1max[i] <- max(as.numeric(matbestlist[[i]][,4]))
+}
+
+plot(a1max)
+
+fin <- Sys.time()
+fin-ini
